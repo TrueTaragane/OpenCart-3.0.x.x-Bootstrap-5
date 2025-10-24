@@ -1,0 +1,4575 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Полное руководство по переходу OpenCart 3.0.x.x на Bootstrap 5</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/highlight.js@11.8.0/styles/github-dark.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: "Segoe UI", Roboto, sans-serif;
+            line-height: 1.6;
+        }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 280px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+            padding: 1rem;
+            z-index: 1000;
+        }
+        .content {
+            margin-left: 300px;
+            padding: 2rem;
+            max-width: 1200px;
+        }
+        pre code {
+            border-radius: 0.5rem;
+            padding: 1rem;
+            display: block;
+            font-size: 0.9rem;
+        }
+        h1, h2, h3 {
+            scroll-margin-top: 80px;
+        }
+        .sidebar a {
+            color: #212529;
+            text-decoration: none;
+            padding: 0.25rem 0;
+            display: block;
+        }
+        .sidebar a:hover {
+            text-decoration: underline;
+            color: #0d6efd;
+        }
+        .sidebar .nav-link.level-2 {
+            padding-left: 1rem;
+            font-size: 0.9rem;
+        }
+        .alert-warning {
+            border-left: 4px solid #ffc107;
+        }
+        .alert-info {
+            border-left: 4px solid #0dcaf0;
+        }
+        .alert-danger {
+            border-left: 4px solid #dc3545;
+        }
+        .file-path {
+            background: #f8f9fa;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        .comparison-table {
+            font-size: 0.9rem;
+        }
+        .comparison-table th {
+            background: #f8f9fa;
+        }
+        /* Стили для поиска */
+        .search-container {
+            position: relative;
+        }
+        
+        .search-results {
+            max-height: 300px;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+        
+        .search-results.show {
+            display: block;
+        }
+        
+        .search-result-item {
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid #f8f9fa;
+            cursor: pointer;
+            transition: background-color 0.15s ease-in-out;
+        }
+        
+        .search-result-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .search-result-title {
+            font-weight: 600;
+            color: #0d6efd;
+            font-size: 0.875rem;
+        }
+        
+        .search-result-description {
+            font-size: 0.75rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+        }
+        
+        .search-result-code {
+            background: #f8f9fa;
+            padding: 0.125rem 0.25rem;
+            border-radius: 0.25rem;
+            font-family: monospace;
+            font-size: 0.75rem;
+        }
+        
+        .search-suggestions {
+            font-size: 0.75rem;
+        }
+        
+        .search-suggestions code {
+            background: #f8f9fa;
+            padding: 0.125rem 0.25rem;
+            border-radius: 0.25rem;
+            font-size: 0.7rem;
+        }
+        
+        .highlight {
+            background-color: #fff3cd;
+            padding: 0.125rem 0.25rem;
+            border-radius: 0.25rem;
+            animation: highlight-fade 3s ease-out;
+        }
+        
+        @keyframes highlight-fade {
+            0% { background-color: #fff3cd; }
+            100% { background-color: transparent; }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s;
+            }
+            .content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+            
+            .search-container {
+                position: static;
+            }
+            
+            .search-results {
+                position: static;
+                max-height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h5 class="mb-3"><i class="bi bi-book"></i> Содержание</h5>
+        
+        <!-- Поиск по документации -->
+        <div class="search-container mb-4">
+            <div class="input-group input-group-sm">
+                <input type="text" id="searchInput" class="form-control" placeholder="Поиск классов Bootstrap..." autocomplete="off">
+                <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+            <div id="searchResults" class="search-results mt-2"></div>
+            <div id="searchSuggestions" class="search-suggestions mt-2">
+                <small class="text-muted">
+                    <strong>Примеры поиска:</strong><br>
+                    • <code>col-xs</code> - классы сетки<br>
+                    • <code>btn-default</code> - кнопки<br>
+                    • <code>glyphicon</code> - иконки<br>
+                    • <code>data-toggle</code> - атрибуты<br>
+                    • <code>form-group</code> - формы<br>
+                    • <code>panel</code> - панели → карточки<br>
+                    • <code>hidden-xs</code> - утилиты видимости
+                </small>
+                <div class="mt-2">
+                    <small class="text-info">
+                        <i class="bi bi-lightbulb"></i> <strong>Совет:</strong> Если не найдено в документации, будут предложены внешние ресурсы
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <nav class="nav flex-column small">
+            <a class="nav-link" href="#intro">Введение</a>
+            <a class="nav-link" href="#preparation">Подготовка к миграции</a>
+            <a class="nav-link level-2" href="#backup">Создание резервной копии</a>
+            <a class="nav-link level-2" href="#analysis">Анализ текущей структуры</a>
+            <a class="nav-link" href="#bootstrap-update">Обновление Bootstrap</a>
+            <a class="nav-link level-2" href="#files-replacement">Замена файлов Bootstrap</a>
+            <a class="nav-link level-2" href="#cdn-update">Обновление CDN ссылок</a>
+            <a class="nav-link" href="#grid-migration">Миграция сетки</a>
+            <a class="nav-link level-2" href="#grid-classes">Классы сетки</a>
+            <a class="nav-link level-2" href="#grid-examples">Примеры изменений</a>
+            <a class="nav-link" href="#components">Компоненты</a>
+            <a class="nav-link level-2" href="#cards">Карточки</a>
+            <a class="nav-link level-2" href="#buttons">Кнопки</a>
+            <a class="nav-link level-2" href="#navbar">Навигация</a>
+            <a class="nav-link level-2" href="#modals">Модальные окна</a>
+            <a class="nav-link level-2" href="#dropdowns">Выпадающие меню</a>
+            <a class="nav-link" href="#forms">Формы</a>
+            <a class="nav-link level-2" href="#form-controls">Элементы форм</a>
+            <a class="nav-link level-2" href="#form-validation">Валидация</a>
+            <a class="nav-link" href="#javascript">JavaScript изменения</a>
+            <a class="nav-link level-2" href="#jquery-analysis">Анализ jQuery 2.1.1</a>
+            <a class="nav-link level-2" href="#jquery-plugins-detailed">jQuery плагины</a>
+            <a class="nav-link level-2" href="#data-attributes">Data-атрибуты</a>
+            <a class="nav-link level-2" href="#common-js">Обновление common.js</a>
+            <a class="nav-link" href="#jquery-security">Безопасность jQuery 2.1.1</a>
+            <a class="nav-link" href="#modules-themes-compatibility">Совместимость модулей</a>
+            <a class="nav-link" href="#icons">Иконки</a>
+            <a class="nav-link level-2" href="#glyphicons-replacement">Замена Glyphicons</a>
+            <a class="nav-link level-2" href="#bootstrap-icons">Bootstrap Icons</a>
+            <a class="nav-link" href="#templates">Обновление шаблонов</a>
+            <a class="nav-link level-2" href="#header-template">Header.twig</a>
+            <a class="nav-link level-2" href="#menu-template">Menu.twig</a>
+            <a class="nav-link level-2" href="#cart-template">Cart.twig</a>
+            <a class="nav-link level-2" href="#footer-template">Footer.twig</a>
+            <a class="nav-link" href="#css-updates">Обновление CSS</a>
+            <a class="nav-link level-2" href="#stylesheet-migration">Stylesheet.css</a>
+            <a class="nav-link level-2" href="#custom-styles">Кастомные стили</a>
+            <a class="nav-link" href="#testing">Тестирование</a>
+            <a class="nav-link level-2" href="#browser-testing">Тестирование в браузерах</a>
+            <a class="nav-link level-2" href="#responsive-testing">Адаптивность</a>
+            <a class="nav-link" href="#troubleshooting">Решение проблем</a>
+            <a class="nav-link" href="#performance">Оптимизация производительности</a>
+            <a class="nav-link" href="#ready-files">Готовые файлы</a>
+            <a class="nav-link level-2" href="#ready-files">Быстрый старт</a>
+            <a class="nav-link" href="#conclusion">Заключение</a>
+        </nav>
+    </div>
+    <div class="content">
+        <h1 id="intro"><i class="bi bi-bootstrap"></i> Полное руководство по переходу OpenCart 3.0.x.x на Bootstrap 5</h1>
+        
+        <div class="alert alert-info">
+            <h5><i class="bi bi-info-circle"></i> О данном руководстве</h5>
+            <p class="mb-2">Это подробное пошаговое руководство поможет вам полностью мигрировать OpenCart 3.0.x.x с Bootstrap 3 на Bootstrap 5. Руководство основано на реальной структуре файлов OpenCart и официальной документации Bootstrap 5.</p>
+            <div class="alert alert-success mb-0">
+                <h6><i class="bi bi-search"></i> Быстрый поиск</h6>
+                <p class="mb-0 small">Используйте поиск в боковой панели для быстрого поиска информации о миграции конкретных классов Bootstrap 3 на Bootstrap 5. Например: <code>col-xs</code>, <code>btn-default</code>, <code>glyphicon</code></p>
+            </div>
+        </div>
+
+        <p>OpenCart 3.0.x.x по умолчанию использует Bootstrap 3, который был выпущен в 2013 году и больше не поддерживается. Bootstrap 5, выпущенный в 2021 году, предлагает современные возможности, лучшую производительность и улучшенную адаптивность.</p>
+
+        <h3>Преимущества перехода на Bootstrap 5:</h3>
+        <ul>
+            <li><strong>Отказ от jQuery:</strong> Bootstrap 5 не требует jQuery, что уменьшает размер и улучшает производительность</li>
+            <li><strong>Улучшенная сетка:</strong> Новые возможности CSS Grid и Flexbox</li>
+            <li><strong>Современные компоненты:</strong> Обновленный дизайн и новые компоненты</li>
+            <li><strong>Лучшая кастомизация:</strong> CSS-переменные для легкой настройки</li>
+            <li><strong>Улучшенная доступность:</strong> Лучшая поддержка screen readers</li>
+            <li><strong>Меньший размер:</strong> Оптимизированный CSS и JS</li>
+        </ul>
+
+        <h2 id="preparation"><i class="bi bi-list-check"></i> Подготовка к миграции</h2>
+        
+        <div class="alert alert-warning">
+            <h5><i class="bi bi-exclamation-triangle"></i> Важно!</h5>
+            <p class="mb-0">Перед началом миграции обязательно создайте полную резервную копию вашего сайта, включая файлы и базу данных.</p>
+        </div>
+
+        <h3 id="backup">Создание резервной копии</h3>
+        <p>Создайте резервные копии следующих директорий и файлов:</p>
+        <ul>
+            <li><span class="file-path">catalog/view/theme/default/</span> - все шаблоны</li>
+            <li><span class="file-path">catalog/view/javascript/</span> - JavaScript файлы</li>
+            <li>База данных OpenCart</li>
+        </ul>
+
+<pre><code class="language-bash"># Создание архива темы
+tar -czf opencart_theme_backup_$(date +%Y%m%d).tar.gz catalog/view/theme/default/
+
+# Создание архива JavaScript
+tar -czf opencart_js_backup_$(date +%Y%m%d).tar.gz catalog/view/javascript/
+</code></pre>
+
+        <h3 id="analysis">Анализ текущей структуры</h3>
+        <p>OpenCart 3.0.x.x имеет следующую структуру файлов, которые потребуют изменений:</p>
+        
+        <div class="table-responsive">
+            <table class="table table-bordered comparison-table">
+                <thead>
+                    <tr>
+                        <th>Файл/Директория</th>
+                        <th>Описание</th>
+                        <th>Требует изменений</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="file-path">catalog/view/javascript/bootstrap/</span></td>
+                        <td>Bootstrap 3 файлы</td>
+                        <td><span class="badge bg-danger">Да</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="file-path">catalog/view/javascript/common.js</span></td>
+                        <td>Основные JS функции</td>
+                        <td><span class="badge bg-warning">Частично</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="file-path">catalog/view/theme/default/stylesheet/stylesheet.css</span></td>
+                        <td>Основные стили</td>
+                        <td><span class="badge bg-danger">Да</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="file-path">catalog/view/theme/default/template/common/header.twig</span></td>
+                        <td>Заголовок сайта</td>
+                        <td><span class="badge bg-danger">Да</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="file-path">catalog/view/theme/default/template/common/menu.twig</span></td>
+                        <td>Главное меню</td>
+                        <td><span class="badge bg-danger">Да</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="file-path">catalog/view/theme/default/template/common/cart.twig</span></td>
+                        <td>Корзина</td>
+                        <td><span class="badge bg-danger">Да</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h2 id="bootstrap-update"><i class="bi bi-download"></i> Обновление Bootstrap</h2>
+
+        <h3 id="files-replacement">Замена файлов Bootstrap</h3>
+        <p>Существует два способа обновления Bootstrap: замена локальных файлов или использование CDN.</p>
+
+        <h4>Способ 1: Замена локальных файлов (рекомендуется для продакшена)</h4>
+        
+        <div class="alert alert-success">
+            <h5><i class="bi bi-check-circle"></i> Готовые файлы Bootstrap 5 (Обновлено 2025)</h5>
+            <p class="mb-2">В папке <span class="file-path">catalog_bootstrap5/</span> подготовлена полностью мигрированная тема OpenCart с Bootstrap 5:</p>
+            <ul class="mb-0 small">
+                <li>✅ <strong>Все стикеры убраны</strong> - чистый дизайн без навязчивых бейджей</li>
+                <li>✅ <strong>Улучшенная галерея товаров</strong> - модальное окно с навигацией</li>
+                <li>✅ <strong>Нативные Bootstrap 5 карусели</strong> - без дополнительных библиотек</li>
+                <li>✅ <strong>Чистая архитектура</strong> - без встроенных стилей в template файлах</li>
+                <li>✅ <strong>Bootstrap Icons</strong> - современные SVG иконки</li>
+                <li>✅ <strong>Адаптивный дизайн</strong> - оптимизирован для всех устройств</li>
+            </ul>
+        </div>
+
+        <h5>Пошаговая инструкция:</h5>
+        <ol>
+            <li><strong>Создайте резервную копию:</strong>
+<pre><code class="language-bash"># Создайте резервную копию текущих файлов
+cp -r catalog/view/javascript/bootstrap catalog/view/javascript/bootstrap_old
+cp -r catalog/view/javascript/common.js catalog/view/javascript/common_old.js
+</code></pre>
+            </li>
+            
+            <li><strong>Замените файлы Bootstrap:</strong>
+<pre><code class="language-bash"># Удалите старые файлы Bootstrap 3
+rm -rf catalog/view/javascript/bootstrap/*
+
+# Скопируйте новые файлы Bootstrap 5
+cp -r catalog_bootstrap5/view/javascript/bootstrap/* catalog/view/javascript/bootstrap/
+</code></pre>
+            </li>
+            
+            <li><strong>Добавьте Bootstrap Icons:</strong>
+<pre><code class="language-bash"># Создайте папку для иконок
+mkdir -p catalog/view/javascript/bootstrap-icons
+
+# Скопируйте иконки
+cp -r catalog_bootstrap5/view/javascript/icons catalog/view/javascript/bootstrap-icons/
+</code></pre>
+            </li>
+            
+            <li><strong>Обновите common.js:</strong>
+<pre><code class="language-bash"># Скопируйте обновленный common.js
+cp catalog_bootstrap5/view/javascript/common.js catalog/view/javascript/
+</code></pre>
+            </li>
+        </ol>
+
+        <div class="alert alert-info">
+            <h5><i class="bi bi-info-circle"></i> Оптимизированная структура Bootstrap 5:</h5>
+            <ul class="mb-0">
+                <li><span class="file-path">css/bootstrap.min.css</span> - основные стили (200KB)</li>
+                <li><span class="file-path">js/bootstrap.bundle.min.js</span> - JS с Popper.js (80KB)</li>
+                <li><span class="file-path">bootstrap-icons.css</span> - CSS для иконок (15KB)</li>
+                <li><span class="file-path">icons/</span> - 2000+ SVG иконок (~2MB)</li>
+            </ul>
+            <p class="mb-0 mt-2"><small class="text-muted">Удалены неиспользуемые файлы: grid, utilities, RTL версии, source maps</small></p>
+        </div>
+
+        <h5>Обновление header.twig для локальных файлов:</h5>
+<pre><code class="language-html">&lt;!-- jQuery (для совместимости с OpenCart) --&gt;
+&lt;script src="catalog/view/javascript/jquery/jquery-2.1.1.min.js" type="text/javascript"&gt;&lt;/script&gt;
+
+&lt;!-- Bootstrap 5 (локальные файлы) --&gt;
+&lt;link href="catalog/view/javascript/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen" /&gt;
+&lt;script src="catalog/view/javascript/bootstrap/js/bootstrap.bundle.min.js" type="text/javascript"&gt;&lt;/script&gt;
+
+&lt;!-- Bootstrap Icons (локальные файлы) --&gt;
+&lt;link href="catalog/view/javascript/bootstrap-icons/bootstrap-icons.css" rel="stylesheet"&gt;
+
+&lt;!-- Font Awesome (для совместимости) --&gt;
+&lt;link href="catalog/view/javascript/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css" /&gt;
+</code></pre>
+
+        <h4>Способ 2: Использование CDN (рекомендуется)</h4>
+        <p>Обновите файл <span class="file-path">catalog/view/theme/default/template/common/header.twig</span>:</p>
+
+<pre><code class="language-html"><!-- Удалите эти строки (Bootstrap 3) -->
+&lt;link href="catalog/view/javascript/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen" /&gt;
+&lt;script src="catalog/view/javascript/bootstrap/js/bootstrap.min.js" type="text/javascript"&gt;&lt;/script&gt;
+
+<!-- Добавьте эти строки (Bootstrap 5) -->
+&lt;link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"&gt;&lt;/script&gt;
+</code></pre>
+
+        <h3 id="cdn-update">Полное обновление header.twig</h3>
+        <p>Замените секцию подключения стилей и скриптов в <span class="file-path">header.twig</span>:</p>
+
+<pre><code class="language-html">&lt;!-- jQuery остается для совместимости с OpenCart --&gt;
+&lt;script src="catalog/view/javascript/jquery/jquery-2.1.1.min.js" type="text/javascript"&gt;&lt;/script&gt;
+
+&lt;!-- Bootstrap 5 --&gt;
+&lt;link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"&gt;&lt;/script&gt;
+
+&lt;!-- Bootstrap Icons (замена Glyphicons) --&gt;
+&lt;link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"&gt;
+
+&lt;!-- Font Awesome (альтернатива иконкам) --&gt;
+&lt;link href="catalog/view/javascript/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css" /&gt;
+
+&lt;!-- Google Fonts --&gt;
+&lt;link href="//fonts.googleapis.com/css?family=Open+Sans:400,400i,300,700" rel="stylesheet" type="text/css" /&gt;
+
+&lt;!-- Основные стили темы --&gt;
+&lt;link href="catalog/view/theme/default/stylesheet/stylesheet.css" rel="stylesheet"&gt;
+</code></pre>
+
+        <h2 id="grid-migration"><i class="bi bi-grid-3x3"></i> Миграция сетки</h2>
+
+        <h3 id="grid-classes">Изменения в классах сетки</h3>
+        <p>Bootstrap 5 убрал класс <code>col-xs-*</code> и изменил некоторые breakpoints:</p>
+
+        <div class="table-responsive">
+            <table class="table table-bordered comparison-table">
+                <thead>
+                    <tr>
+                        <th>Bootstrap 3</th>
+                        <th>Bootstrap 5</th>
+                        <th>Описание</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>col-xs-*</code></td>
+                        <td><code>col-*</code></td>
+                        <td>Экстра малые экраны (&lt;576px)</td>
+                    </tr>
+                    <tr>
+                        <td><code>col-sm-*</code></td>
+                        <td><code>col-sm-*</code></td>
+                        <td>Малые экраны (≥576px)</td>
+                    </tr>
+                    <tr>
+                        <td><code>col-md-*</code></td>
+                        <td><code>col-md-*</code></td>
+                        <td>Средние экраны (≥768px)</td>
+                    </tr>
+                    <tr>
+                        <td><code>col-lg-*</code></td>
+                        <td><code>col-lg-*</code></td>
+                        <td>Большие экраны (≥992px)</td>
+                    </tr>
+                    <tr>
+                        <td>-</td>
+                        <td><code>col-xl-*</code></td>
+                        <td>Экстра большие экраны (≥1200px)</td>
+                    </tr>
+                    <tr>
+                        <td>-</td>
+                        <td><code>col-xxl-*</code></td>
+                        <td>Экстра экстра большие экраны (≥1400px)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3 id="grid-examples">Примеры изменений в шаблонах</h3>
+
+        <h4>Обновление footer.twig</h4>
+<pre><code class="language-html">&lt;!-- Bootstrap 3 --&gt;
+&lt;div class="col-sm-3"&gt;
+  &lt;h5&gt;{{ text_information }}&lt;/h5&gt;
+  &lt;ul class="list-unstyled"&gt;
+    {% for information in informations %}
+    &lt;li&gt;&lt;a href="{{ information.href }}"&gt;{{ information.title }}&lt;/a&gt;&lt;/li&gt;
+    {% endfor %}
+  &lt;/ul&gt;
+&lt;/div&gt;
+
+&lt;!-- Bootstrap 5 (без изменений, но можно улучшить) --&gt;
+&lt;div class="col-sm-6 col-md-3"&gt;
+  &lt;h5&gt;{{ text_information }}&lt;/h5&gt;
+  &lt;ul class="list-unstyled"&gt;
+    {% for information in informations %}
+    &lt;li&gt;&lt;a href="{{ information.href }}" class="text-decoration-none"&gt;{{ information.title }}&lt;/a&gt;&lt;/li&gt;
+    {% endfor %}
+  &lt;/ul&gt;
+&lt;/div&gt;
+</code></pre>
+
+        <h4>Обновление сетки товаров в common.js</h4>
+        <p>В файле <span class="file-path">catalog/view/javascript/common.js</span> найдите и обновите функции переключения вида:</p>
+
+<pre><code class="language-javascript">// Bootstrap 3 (старый код)
+$('#content .product-list').attr('class', 'product-layout product-grid col-lg-6 col-md-6 col-sm-12 col-xs-12');
+
+// Bootstrap 5 (новый код)
+$('#content .product-list').attr('class', 'product-layout product-grid col-lg-6 col-md-6 col-sm-12 col-12');
+</code></pre>
+
+<pre><code class="language-javascript">// Полная замена функции grid view
+$('#grid-view').click(function() {
+    var cols = $('#column-right, #column-left').length;
+
+    if (cols == 2) {
+        $('#content .product-list').attr('class', 'product-layout product-grid col-lg-6 col-md-6 col-sm-12 col-12');
+    } else if (cols == 1) {
+        $('#content .product-list').attr('class', 'product-layout product-grid col-lg-4 col-md-4 col-sm-6 col-12');
+    } else {
+        $('#content .product-list').attr('class', 'product-layout product-grid col-lg-3 col-md-3 col-sm-6 col-12');
+    }
+
+    $('#list-view').removeClass('active');
+    $('#grid-view').addClass('active');
+
+    localStorage.setItem('display', 'grid');
+});
+
+// Обновление list view
+$('#list-view').click(function() {
+    $('#content .product-grid > .clearfix').remove();
+    $('#content .row > .product-grid').attr('class', 'product-layout product-list col-12');
+    $('#grid-view').removeClass('active');
+    $('#list-view').addClass('active');
+    localStorage.setItem('display', 'list');
+});
+</code></pre>
+
+        <h2 id="components"><i class="bi bi-puzzle"></i> Компоненты</h2>
+
+        <h3 id="cards">Карточки (Cards)</h3>
+        <p>Bootstrap 5 сохранил структуру карточек, но добавил новые возможности:</p>
+
+<pre><code class="language-html">&lt;!-- Базовая карточка --&gt;
+&lt;div class="card"&gt;
+  &lt;div class="card-header"&gt;
+    &lt;h5 class="card-title mb-0"&gt;Заголовок карточки&lt;/h5&gt;
+  &lt;/div&gt;
+  &lt;div class="card-body"&gt;
+    &lt;p class="card-text"&gt;Содержимое карточки&lt;/p&gt;
+    &lt;a href="#" class="btn btn-primary"&gt;Действие&lt;/a&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- Карточка товара для OpenCart --&gt;
+&lt;div class="card h-100"&gt;
+  &lt;img src="{{ product.thumb }}" class="card-img-top" alt="{{ product.name }}"&gt;
+  &lt;div class="card-body d-flex flex-column"&gt;
+    &lt;h5 class="card-title"&gt;{{ product.name }}&lt;/h5&gt;
+    &lt;p class="card-text flex-grow-1"&gt;{{ product.description }}&lt;/p&gt;
+    &lt;div class="mt-auto"&gt;
+      &lt;div class="d-flex justify-content-between align-items-center"&gt;
+        &lt;span class="h5 mb-0 text-primary"&gt;{{ product.price }}&lt;/span&gt;
+        &lt;button class="btn btn-outline-primary btn-sm" onclick="cart.add('{{ product.product_id }}');"&gt;
+          &lt;i class="bi bi-cart-plus"&gt;&lt;/i&gt; В корзину
+        &lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
+
+        <h3 id="buttons">Кнопки</h3>
+        <p>Bootstrap 5 изменил некоторые классы кнопок и добавил новые варианты:</p>
+
+        <div class="table-responsive">
+            <table class="table table-bordered comparison-table">
+                <thead>
+                    <tr>
+                        <th>Bootstrap 3</th>
+                        <th>Bootstrap 5</th>
+                        <th>Описание</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>btn-default</code></td>
+                        <td><code>btn-secondary</code></td>
+                        <td>Стандартная кнопка</td>
+                    </tr>
+                    <tr>
+                        <td><code>btn-xs</code></td>
+                        <td><code>btn-sm</code></td>
+                        <td>Маленькая кнопка</td>
+                    </tr>
+                    <tr>
+                        <td>-</td>
+                        <td><code>btn-close</code></td>
+                        <td>Кнопка закрытия</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+<pre><code class="language-html">&lt;!-- Обновление кнопок в шаблонах --&gt;
+
+&lt;!-- Bootstrap 3 --&gt;
+&lt;button class="btn btn-default"&gt;Отмена&lt;/button&gt;
+&lt;button class="btn btn-primary"&gt;Сохранить&lt;/button&gt;
+
+&lt;!-- Bootstrap 5 --&gt;
+&lt;button class="btn btn-secondary"&gt;Отмена&lt;/button&gt;
+&lt;button class="btn btn-primary"&gt;Сохранить&lt;/button&gt;
+
+&lt;!-- Группа кнопок --&gt;
+&lt;div class="btn-group" role="group"&gt;
+  &lt;button type="button" class="btn btn-outline-primary"&gt;Список&lt;/button&gt;
+  &lt;button type="button" class="btn btn-outline-primary active"&gt;Сетка&lt;/button&gt;
+&lt;/div&gt;
+</code></pre>
+
+        <h3 id="navbar">Навигация (Navbar)</h3>
+        <p>Navbar в Bootstrap 5 претерпел значительные изменения. Обновите <span class="file-path">menu.twig</span>:</p>
+
+<pre><code class="language-html">&lt;!-- Bootstrap 3 (старый код) --&gt;
+&lt;nav id="menu" class="navbar"&gt;
+  &lt;div class="navbar-header"&gt;
+    &lt;span id="category" class="visible-xs"&gt;{{ text_category }}&lt;/span&gt;
+    &lt;button type="button" class="btn btn-navbar navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse"&gt;
+      &lt;i class="fa fa-bars"&gt;&lt;/i&gt;
+    &lt;/button&gt;
+  &lt;/div&gt;
+  &lt;div class="collapse navbar-collapse navbar-ex1-collapse"&gt;
+    &lt;ul class="nav navbar-nav"&gt;
+      &lt;!-- меню --&gt;
+    &lt;/ul&gt;
+  &lt;/div&gt;
+&lt;/nav&gt;
+
+&lt;!-- Bootstrap 5 (новый код) --&gt;
+&lt;nav id="menu" class="navbar navbar-expand-lg"&gt;
+  &lt;div class="container-fluid"&gt;
+    &lt;span class="navbar-brand d-lg-none"&gt;{{ text_category }}&lt;/span&gt;
+    &lt;button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"&gt;
+      &lt;span class="navbar-toggler-icon"&gt;&lt;/span&gt;
+    &lt;/button&gt;
+    &lt;div class="collapse navbar-collapse" id="navbarNav"&gt;
+      &lt;ul class="navbar-nav"&gt;
+        {% for category in categories %}
+        {% if category.children %}
+        &lt;li class="nav-item dropdown"&gt;
+          &lt;a class="nav-link dropdown-toggle" href="{{ category.href }}" data-bs-toggle="dropdown"&gt;
+            {{ category.name }}
+          &lt;/a&gt;
+          &lt;div class="dropdown-menu"&gt;
+            &lt;div class="dropdown-inner"&gt;
+              {% for children in category.children|batch(category.children|length / category.column|round(1, 'ceil')) %}
+              &lt;div class="dropdown-column"&gt;
+                {% for child in children %}
+                &lt;a class="dropdown-item" href="{{ child.href }}"&gt;{{ child.name }}&lt;/a&gt;
+                {% endfor %}
+              &lt;/div&gt;
+              {% endfor %}
+            &lt;/div&gt;
+            &lt;div class="dropdown-divider"&gt;&lt;/div&gt;
+            &lt;a class="dropdown-item fw-bold" href="{{ category.href }}"&gt;{{ text_all }} {{ category.name }}&lt;/a&gt;
+          &lt;/div&gt;
+        &lt;/li&gt;
+        {% else %}
+        &lt;li class="nav-item"&gt;
+          &lt;a class="nav-link" href="{{ category.href }}"&gt;{{ category.name }}&lt;/a&gt;
+        &lt;/li&gt;
+        {% endif %}
+        {% endfor %}
+      &lt;/ul&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/nav&gt;
+</code></pre>
+
+        <h3 id="modals">Модальные окна</h3>
+        <p>Модальные окна в Bootstrap 5 изменили data-атрибуты и структуру:</p>
+
+<pre><code class="language-html">&lt;!-- Bootstrap 3 --&gt;
+&lt;button data-toggle="modal" data-target="#myModal"&gt;Открыть&lt;/button&gt;
+&lt;div class="modal fade" id="myModal"&gt;
+  &lt;div class="modal-dialog"&gt;
+    &lt;div class="modal-content"&gt;
+      &lt;div class="modal-header"&gt;
+        &lt;button type="button" class="close" data-dismiss="modal"&gt;&times;&lt;/button&gt;
+        &lt;h4 class="modal-title"&gt;Заголовок&lt;/h4&gt;
+      &lt;/div&gt;
+      &lt;div class="modal-body"&gt;Содержимое&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- Bootstrap 5 --&gt;
+&lt;button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#myModal"&gt;Открыть&lt;/button&gt;
+&lt;div class="modal fade" id="myModal" tabindex="-1"&gt;
+  &lt;div class="modal-dialog"&gt;
+    &lt;div class="modal-content"&gt;
+      &lt;div class="modal-header"&gt;
+        &lt;h5 class="modal-title"&gt;Заголовок&lt;/h5&gt;
+        &lt;button type="button" class="btn-close" data-bs-dismiss="modal"&gt;&lt;/button&gt;
+      &lt;/div&gt;
+      &lt;div class="modal-body"&gt;Содержимое&lt;/div&gt;
+      &lt;div class="modal-footer"&gt;
+        &lt;button type="button" class="btn btn-secondary" data-bs-dismiss="modal"&gt;Закрыть&lt;/button&gt;
+        &lt;button type="button" class="btn btn-primary"&gt;Сохранить&lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
+
+        <h3 id="dropdowns">Выпадающие меню</h3>
+        <p>Обновите корзину в <span class="file-path">cart.twig</span>:</p>
+
+<pre><code class="language-html">&lt;!-- Bootstrap 3 --&gt;
+&lt;div id="cart" class="btn-group btn-block"&gt;
+  &lt;button type="button" data-toggle="dropdown" class="btn btn-inverse btn-block btn-lg dropdown-toggle"&gt;
+    &lt;i class="fa fa-shopping-cart"&gt;&lt;/i&gt; &lt;span id="cart-total"&gt;{{ text_items }}&lt;/span&gt;
+  &lt;/button&gt;
+  &lt;ul class="dropdown-menu pull-right"&gt;
+    &lt;!-- содержимое --&gt;
+  &lt;/ul&gt;
+&lt;/div&gt;
+
+&lt;!-- Bootstrap 5 --&gt;
+&lt;div id="cart" class="dropdown"&gt;
+  &lt;button class="btn btn-dark btn-lg dropdown-toggle w-100" type="button" data-bs-toggle="dropdown"&gt;
+    &lt;i class="bi bi-cart"&gt;&lt;/i&gt; &lt;span id="cart-total"&gt;{{ text_items }}&lt;/span&gt;
+  &lt;/button&gt;
+  &lt;div class="dropdown-menu dropdown-menu-end"&gt;
+    {% if products or vouchers %}
+    &lt;div class="dropdown-item-text"&gt;
+      &lt;div class="table-responsive"&gt;
+        &lt;table class="table table-sm"&gt;
+          {% for product in products %}
+          &lt;tr&gt;
+            &lt;td class="text-center"&gt;
+              {% if product.thumb %}
+              &lt;a href="{{ product.href }}"&gt;
+                &lt;img src="{{ product.thumb }}" alt="{{ product.name }}" class="img-thumbnail" style="width: 40px;"&gt;
+              &lt;/a&gt;
+              {% endif %}
+            &lt;/td&gt;
+            &lt;td&gt;
+              &lt;a href="{{ product.href }}" class="text-decoration-none"&gt;{{ product.name }}&lt;/a&gt;
+              {% if product.option %}
+                {% for option in product.option %}
+                &lt;br&gt;&lt;small class="text-muted"&gt;- {{ option.name }} {{ option.value }}&lt;/small&gt;
+                {% endfor %}
+              {% endif %}
+            &lt;/td&gt;
+            &lt;td&gt;x {{ product.quantity }}&lt;/td&gt;
+            &lt;td&gt;{{ product.total }}&lt;/td&gt;
+            &lt;td&gt;
+              &lt;button type="button" onclick="cart.remove('{{ product.cart_id }}');" class="btn btn-danger btn-sm"&gt;
+                &lt;i class="bi bi-x"&gt;&lt;/i&gt;
+              &lt;/button&gt;
+            &lt;/td&gt;
+          &lt;/tr&gt;
+          {% endfor %}
+        &lt;/table&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="dropdown-divider"&gt;&lt;/div&gt;
+    &lt;div class="dropdown-item-text"&gt;
+      &lt;div class="d-flex justify-content-between"&gt;
+        &lt;a href="{{ cart }}" class="btn btn-outline-primary btn-sm"&gt;
+          &lt;i class="bi bi-cart"&gt;&lt;/i&gt; {{ text_cart }}
+        &lt;/a&gt;
+        &lt;a href="{{ checkout }}" class="btn btn-primary btn-sm"&gt;
+          &lt;i class="bi bi-credit-card"&gt;&lt;/i&gt; {{ text_checkout }}
+        &lt;/a&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    {% else %}
+    &lt;div class="dropdown-item-text text-center"&gt;
+      &lt;p class="mb-0"&gt;{{ text_empty }}&lt;/p&gt;
+    &lt;/div&gt;
+    {% endif %}
+  &lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
+
+        <h2 id="forms"><i class="bi bi-ui-checks"></i> Формы</h2>
+
+        <h3 id="form-controls">Элементы форм</h3>
+        <p>Bootstrap 5 изменил классы форм и их структуру:</p>
+
+        <div class="table-responsive">
+            <table class="table table-bordered comparison-table">
+                <thead>
+                    <tr>
+                        <th>Bootstrap 3</th>
+                        <th>Bootstrap 5</th>
+                        <th>Описание</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>form-group</code></td>
+                        <td><code>mb-3</code></td>
+                        <td>Отступ между полями</td>
+                    </tr>
+                    <tr>
+                        <td><code>control-label</code></td>
+                        <td><code>form-label</code></td>
+                        <td>Метка поля</td>
+                    </tr>
+                    <tr>
+                        <td><code>help-block</code></td>
+                        <td><code>form-text</code></td>
+                        <td>Вспомогательный текст</td>
+                    </tr>
+                    <tr>
+                        <td><code>has-error</code></td>
+                        <td><code>is-invalid</code></td>
+                        <td>Состояние ошибки</td>
+                    </tr>
+                    <tr>
+                        <td><code>has-success</code></td>
+                        <td><code>is-valid</code></td>
+                        <td>Состояние успеха</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+<pre><code class="language-html">&lt;!-- Bootstrap 3 --&gt;
+&lt;div class="form-group"&gt;
+  &lt;label class="control-label" for="input-name"&gt;Имя&lt;/label&gt;
+  &lt;input type="text" name="name" id="input-name" class="form-control"&gt;
+  &lt;span class="help-block"&gt;Введите ваше имя&lt;/span&gt;
+&lt;/div&gt;
+
+&lt;!-- Bootstrap 5 --&gt;
+&lt;div class="mb-3"&gt;
+  &lt;label for="input-name" class="form-label"&gt;Имя&lt;/label&gt;
+  &lt;input type="text" name="name" id="input-name" class="form-control"&gt;
+  &lt;div class="form-text"&gt;Введите ваше имя&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- Форма с валидацией --&gt;
+&lt;div class="mb-3"&gt;
+  &lt;label for="input-email" class="form-label"&gt;Email&lt;/label&gt;
+  &lt;input type="email" name="email" id="input-email" class="form-control is-invalid" required&gt;
+  &lt;div class="invalid-feedback"&gt;
+    Пожалуйста, введите корректный email адрес.
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- Группа полей --&gt;
+&lt;div class="row"&gt;
+  &lt;div class="col-md-6"&gt;
+    &lt;div class="mb-3"&gt;
+      &lt;label for="input-firstname" class="form-label"&gt;Имя&lt;/label&gt;
+      &lt;input type="text" name="firstname" id="input-firstname" class="form-control"&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class="col-md-6"&gt;
+    &lt;div class="mb-3"&gt;
+      &lt;label for="input-lastname" class="form-label"&gt;Фамилия&lt;/label&gt;
+      &lt;input type="text" name="lastname" id="input-lastname" class="form-control"&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- Чекбоксы и радиокнопки --&gt;
+&lt;div class="mb-3"&gt;
+  &lt;div class="form-check"&gt;
+    &lt;input class="form-check-input" type="checkbox" value="" id="newsletter"&gt;
+    &lt;label class="form-check-label" for="newsletter"&gt;
+      Подписаться на рассылку
+    &lt;/label&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="mb-3"&gt;
+  &lt;div class="form-check"&gt;
+    &lt;input class="form-check-input" type="radio" name="gender" id="male" value="male"&gt;
+    &lt;label class="form-check-label" for="male"&gt;Мужской&lt;/label&gt;
+  &lt;/div&gt;
+  &lt;div class="form-check"&gt;
+    &lt;input class="form-check-input" type="radio" name="gender" id="female" value="female"&gt;
+    &lt;label class="form-check-label" for="female"&gt;Женский&lt;/label&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- Селект --&gt;
+&lt;div class="mb-3"&gt;
+  &lt;label for="input-country" class="form-label"&gt;Страна&lt;/label&gt;
+  &lt;select name="country_id" id="input-country" class="form-select"&gt;
+    &lt;option value=""&gt;Выберите страну&lt;/option&gt;
+    {% for country in countries %}
+    &lt;option value="{{ country.country_id }}"&gt;{{ country.name }}&lt;/option&gt;
+    {% endfor %}
+  &lt;/select&gt;
+&lt;/div&gt;
+</code></pre>
+
+        <h3 id="form-validation">Валидация форм</h3>
+        <p>Обновите JavaScript для работы с новыми классами валидации в <span class="file-path">common.js</span>:</p>
+
+<pre><code class="language-javascript">// Bootstrap 3 (старый код)
+$(document).ready(function() {
+    $('.text-danger').each(function() {
+        var element = $(this).parent().parent();
+        if (element.hasClass('form-group')) {
+            element.addClass('has-error');
+        }
+    });
+});
+
+// Bootstrap 5 (новый код)
+$(document).ready(function() {
+    // Обработка ошибок валидации
+    $('.text-danger').each(function() {
+        var element = $(this).closest('.mb-3').find('.form-control, .form-select');
+        if (element.length) {
+            element.addClass('is-invalid');
+        }
+    });
+
+    // Обработка успешной валидации
+    $('.text-success').each(function() {
+        var element = $(this).closest('.mb-3').find('.form-control, .form-select');
+        if (element.length) {
+            element.addClass('is-valid');
+        }
+    });
+});
+
+// Функция для показа ошибок
+function showFormError(field, message) {
+    var input = $('[name="' + field + '"]');
+    var container = input.closest('.mb-3');
+    
+    // Удаляем предыдущие ошибки
+    container.find('.invalid-feedback').remove();
+    input.removeClass('is-invalid is-valid');
+    
+    // Добавляем новую ошибку
+    input.addClass('is-invalid');
+    input.after('&lt;div class="invalid-feedback"&gt;' + message + '&lt;/div&gt;');
+}
+
+// Функция для очистки ошибок
+function clearFormErrors() {
+    $('.form-control, .form-select').removeClass('is-invalid is-valid');
+    $('.invalid-feedback').remove();
+}
+</code></pre>
+
+        <h2 id="javascript"><i class="bi bi-code-slash"></i> JavaScript изменения</h2>
+
+        <div class="alert alert-info">
+            <h5><i class="bi bi-info-circle"></i> О jQuery 2.1.1 в OpenCart 3.0.x.x</h5>
+            <p class="mb-2">OpenCart 3.0.x.x использует jQuery 2.1.1 (выпущена в мае 2014 года). Эта версия была выбрана для стабильности и совместимости с модулями.</p>
+            <p class="mb-0"><strong>Bootstrap 5 не требует jQuery</strong>, но мы сохраняем её для совместимости с существующими темами и модулями.</p>
+        </div>
+
+        <h3 id="jquery-analysis">Анализ jQuery 2.1.1</h3>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="mb-0"><i class="bi bi-info-circle"></i> Характеристики версии</h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="mb-0 small">
+                            <li><strong>Версия:</strong> 2.1.1 (май 2014)</li>
+                            <li><strong>Размер:</strong> ~84KB (минифицированная)</li>
+                            <li><strong>Поддержка IE:</strong> IE9+</li>
+                            <li><strong>Статус:</strong> Устаревшая, но стабильная</li>
+                            <li><strong>Последнее обновление:</strong> 2014 год</li>
+                            <li><strong>Уязвимости:</strong> Несколько известных</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0"><i class="bi bi-check-circle"></i> Преимущества для OpenCart</h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="mb-0 small">
+                            <li>Полная совместимость с модулями</li>
+                            <li>Стабильная работа всех функций</li>
+                            <li>Знакомый API для разработчиков</li>
+                            <li>Поддержка всех плагинов</li>
+                            <li>Нет необходимости переписывать код</li>
+                            <li>Проверенная временем надежность</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h4>Совместимость jQuery 2.1.1 с современными браузерами</h4>
+        
+        <div class="table-responsive">
+            <table class="table table-bordered comparison-table">
+                <thead>
+                    <tr>
+                        <th>Браузер</th>
+                        <th>Минимальная версия</th>
+                        <th>Текущая поддержка</th>
+                        <th>Примечания</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Chrome</strong></td>
+                        <td>Все версии</td>
+                        <td><span class="badge bg-success">Отлично</span></td>
+                        <td>Полная совместимость</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Firefox</strong></td>
+                        <td>Все версии</td>
+                        <td><span class="badge bg-success">Отлично</span></td>
+                        <td>Полная совместимость</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Safari</strong></td>
+                        <td>5.1+</td>
+                        <td><span class="badge bg-success">Отлично</span></td>
+                        <td>Включая мобильный Safari</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Edge</strong></td>
+                        <td>Все версии</td>
+                        <td><span class="badge bg-success">Отлично</span></td>
+                        <td>Полная совместимость</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Internet Explorer</strong></td>
+                        <td>9+</td>
+                        <td><span class="badge bg-warning">Ограниченно</span></td>
+                        <td>IE8 не поддерживается</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Opera</strong></td>
+                        <td>12.1+</td>
+                        <td><span class="badge bg-success">Отлично</span></td>
+                        <td>Полная совместимость</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3 id="jquery-plugins-detailed">Подробный анализ jQuery плагинов</h3>
+        
+        <h4>1. Bootstrap DateTimePicker v3.1.3</h4>
+        <div class="alert alert-warning">
+            <h6><i class="bi bi-exclamation-triangle"></i> Устаревший плагин для Bootstrap 3</h6>
+            <p class="mb-2">Этот плагин был создан специально для Bootstrap 3 и использует устаревшие классы и структуру.</p>
+            <p class="mb-0">Требует адаптации CSS стилей для Bootstrap 5.</p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Проблемы совместимости:</h6>
+                <ul class="small">
+                    <li>Использует классы Bootstrap 3 (<code>.form-group</code>, <code>.input-group-addon</code>)</li>
+                    <li>Цветовая схема Bootstrap 3 (<code>#428bca</code>)</li>
+                    <li>Устаревшие размеры и отступы</li>
+                    <li>Конфликты с темной темой</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h6>Решения:</h6>
+                <ul class="small">
+                    <li>Обновить CSS переменные на Bootstrap 5</li>
+                    <li>Заменить классы на современные</li>
+                    <li>Добавить поддержку темной темы</li>
+                    <li>Использовать CSS Custom Properties</li>
+                </ul>
+            </div>
+        </div>
+
+        <h4>2. Magnific Popup</h4>
+        <div class="alert alert-success">
+            <h6><i class="bi bi-check-circle"></i> Полностью совместим</h6>
+            <p class="mb-0">Magnific Popup не зависит от Bootstrap и работает отлично с любой версией.</p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Преимущества:</h6>
+                <ul class="small">
+                    <li>Независим от Bootstrap</li>
+                    <li>Собственные CSS стили</li>
+                    <li>Работает с любыми фреймворками</li>
+                    <li>Стабильная работа</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h6>Возможные улучшения:</h6>
+                <ul class="small">
+                    <li>Интеграция с Bootstrap 5 модальными окнами</li>
+                    <li>Использование CSS переменных Bootstrap 5</li>
+                    <li>Адаптация под темную тему</li>
+                    <li>Улучшенная адаптивность</li>
+                </ul>
+            </div>
+        </div>
+
+        <h4>3. Swiper (старая версия)</h4>
+        <div class="alert alert-warning">
+            <h6><i class="bi bi-exclamation-triangle"></i> Устаревшая версия</h6>
+            <p class="mb-0">Используется старая версия Swiper, которая может иметь проблемы с современными браузерами.</p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Проблемы:</h6>
+                <ul class="small">
+                    <li>Устаревшие breakpoints</li>
+                    <li>Проблемы с touch событиями</li>
+                    <li>Неоптимальная производительность</li>
+                    <li>Ограниченная функциональность</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h6>Рекомендации:</h6>
+                <ul class="small">
+                    <li>Обновить до Swiper 8+</li>
+                    <li>Использовать Bootstrap 5 breakpoints</li>
+                    <li>Добавить современные API</li>
+                    <li>Улучшить производительность</li>
+                </ul>
+            </div>
+        </div>
+
+        <h3 id="data-attributes">Обновление data-атрибутов</h3>
+        <p>Bootstrap 5 изменил все data-атрибуты, добавив префикс <code>bs-</code>:</p>
+
+        <div class="table-responsive">
+            <table class="table table-bordered comparison-table">
+                <thead>
+                    <tr>
+                        <th>Bootstrap 3</th>
+                        <th>Bootstrap 5</th>
+                        <th>Компонент</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>data-toggle</code></td>
+                        <td><code>data-bs-toggle</code></td>
+                        <td>Все компоненты</td>
+                    </tr>
+                    <tr>
+                        <td><code>data-target</code></td>
+                        <td><code>data-bs-target</code></td>
+                        <td>Modal, Collapse</td>
+                    </tr>
+                    <tr>
+                        <td><code>data-dismiss</code></td>
+                        <td><code>data-bs-dismiss</code></td>
+                        <td>Modal, Alert</td>
+                    </tr>
+                    <tr>
+                        <td><code>data-slide</code></td>
+                        <td><code>data-bs-slide</code></td>
+                        <td>Carousel</td>
+                    </tr>
+                    <tr>
+                        <td><code>data-parent</code></td>
+                        <td><code>data-bs-parent</code></td>
+                        <td>Collapse</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3 id="common-js">Обновление common.js</h3>
+        <p>Обновите <span class="file-path">catalog/view/javascript/common.js</span> для совместимости с Bootstrap 5:</p>
+
+<pre><code class="language-javascript">// Обновление tooltips
+$(document).ready(function() {
+    // Bootstrap 3 (старый код)
+    // $('[data-toggle="tooltip"]').tooltip({container: 'body'});
+    
+    // Bootstrap 5 (новый код)
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl, {
+            container: 'body'
+        });
+    });
+
+    // Обновление tooltips для AJAX контента
+    $(document).ajaxStop(function() {
+        var newTooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]:not([data-bs-original-title])'));
+        newTooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl, {
+                container: 'body'
+            });
+        });
+    });
+});
+
+// Обновление модальных окон для соглашений
+$(document).delegate('.agree', 'click', function(e) {
+    e.preventDefault();
+
+    // Удаляем предыдущее модальное окно
+    var existingModal = document.getElementById('modal-agree');
+    if (existingModal) {
+        var modal = bootstrap.Modal.getInstance(existingModal);
+        if (modal) {
+            modal.dispose();
+        }
+        existingModal.remove();
+    }
+
+    var element = this;
+
+    $.ajax({
+        url: $(element).attr('href'),
+        type: 'get',
+        dataType: 'html',
+        success: function(data) {
+            var html = '&lt;div id="modal-agree" class="modal fade" tabindex="-1"&gt;' +
+                      '  &lt;div class="modal-dialog modal-lg"&gt;' +
+                      '    &lt;div class="modal-content"&gt;' +
+                      '      &lt;div class="modal-header"&gt;' +
+                      '        &lt;h5 class="modal-title"&gt;' + $(element).text() + '&lt;/h5&gt;' +
+                      '        &lt;button type="button" class="btn-close" data-bs-dismiss="modal"&gt;&lt;/button&gt;' +
+                      '      &lt;/div&gt;' +
+                      '      &lt;div class="modal-body"&gt;' + data + '&lt;/div&gt;' +
+                      '      &lt;div class="modal-footer"&gt;' +
+                      '        &lt;button type="button" class="btn btn-secondary" data-bs-dismiss="modal"&gt;Закрыть&lt;/button&gt;' +
+                      '      &lt;/div&gt;' +
+                      '    &lt;/div&gt;' +
+                      '  &lt;/div&gt;' +
+                      '&lt;/div&gt;';
+
+            $('body').append(html);
+
+            var modal = new bootstrap.Modal(document.getElementById('modal-agree'));
+            modal.show();
+        }
+    });
+});
+
+// Обновление функций корзины
+var cart = {
+    'add': function(product_id, quantity) {
+        $.ajax({
+            url: 'index.php?route=checkout/cart/add',
+            type: 'post',
+            data: 'product_id=' + product_id + '&quantity=' + (typeof(quantity) != 'undefined' ? quantity : 1),
+            dataType: 'json',
+            beforeSend: function() {
+                $('#cart > button').prop('disabled', true).html('&lt;span class="spinner-border spinner-border-sm" role="status"&gt;&lt;/span&gt; Загрузка...');
+            },
+            complete: function() {
+                $('#cart > button').prop('disabled', false);
+            },
+            success: function(json) {
+                $('.alert-dismissible, .text-danger').remove();
+
+                if (json['redirect']) {
+                    location = json['redirect'];
+                }
+
+                if (json['success']) {
+                    // Показываем уведомление Bootstrap 5
+                    var alertHtml = '&lt;div class="alert alert-success alert-dismissible fade show" role="alert"&gt;' +
+                                   '&lt;i class="bi bi-check-circle"&gt;&lt;/i&gt; ' + json['success'] +
+                                   '&lt;button type="button" class="btn-close" data-bs-dismiss="alert"&gt;&lt;/button&gt;' +
+                                   '&lt;/div&gt;';
+                    
+                    $('#content').parent().prepend(alertHtml);
+
+                    // Обновляем счетчик корзины
+                    setTimeout(function () {
+                        $('#cart > button').html('&lt;i class="bi bi-cart"&gt;&lt;/i&gt; &lt;span id="cart-total"&gt;' + json['total'] + '&lt;/span&gt;');
+                    }, 100);
+
+                    $('html, body').animate({ scrollTop: 0 }, 'slow');
+
+                    // Обновляем содержимое корзины
+                    $('#cart .dropdown-menu').load('index.php?route=common/cart/info .dropdown-menu &gt; *');
+                }
+            },
+            error: function(xhr, ajaxOptions, thrownError) {
+                console.error(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+                
+                var alertHtml = '&lt;div class="alert alert-danger alert-dismissible fade show" role="alert"&gt;' +
+                               '&lt;i class="bi bi-exclamation-triangle"&gt;&lt;/i&gt; Произошла ошибка при добавлении товара в корзину.' +
+                               '&lt;button type="button" class="btn-close" data-bs-dismiss="alert"&gt;&lt;/button&gt;' +
+                               '&lt;/div&gt;';
+                
+                $('#content').parent().prepend(alertHtml);
+            }
+        });
+    },
+    'update': function(key, quantity) {
+        $.ajax({
+            url: 'index.php?route=checkout/cart/edit',
+            type: 'post',
+            data: 'key=' + key + '&quantity=' + (typeof(quantity) != 'undefined' ? quantity : 1),
+            dataType: 'json',
+            beforeSend: function() {
+                $('#cart > button').prop('disabled', true);
+            },
+            complete: function() {
+                $('#cart > button').prop('disabled', false);
+            },
+            success: function(json) {
+                setTimeout(function () {
+                    $('#cart > button').html('&lt;i class="bi bi-cart"&gt;&lt;/i&gt; &lt;span id="cart-total"&gt;' + json['total'] + '&lt;/span&gt;');
+                }, 100);
+
+                if (getURLVar('route') == 'checkout/cart' || getURLVar('route') == 'checkout/checkout') {
+                    location = 'index.php?route=checkout/cart';
+                } else {
+                    $('#cart .dropdown-menu').load('index.php?route=common/cart/info .dropdown-menu &gt; *');
+                }
+            },
+            error: function(xhr, ajaxOptions, thrownError) {
+                console.error(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+            }
+        });
+    },
+    'remove': function(key) {
+        $.ajax({
+            url: 'index.php?route=checkout/cart/remove',
+            type: 'post',
+            data: 'key=' + key,
+            dataType: 'json',
+            beforeSend: function() {
+                $('#cart > button').prop('disabled', true);
+            },
+            complete: function() {
+                $('#cart > button').prop('disabled', false);
+            },
+            success: function(json) {
+                setTimeout(function () {
+                    $('#cart > button').html('&lt;i class="bi bi-cart"&gt;&lt;/i&gt; &lt;span id="cart-total"&gt;' + json['total'] + '&lt;/span&gt;');
+                }, 100);
+
+                if (getURLVar('route') == 'checkout/cart' || getURLVar('route') == 'checkout/checkout') {
+                    location = 'index.php?route=checkout/cart';
+                } else {
+                    $('#cart .dropdown-menu').load('index.php?route=common/cart/info .dropdown-menu &gt; *');
+                }
+            },
+            error: function(xhr, ajaxOptions, thrownError) {
+                console.error(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+            }
+        });
+    }
+};
+</code></pre>
+
+        <h2 id="icons"><i class="bi bi-emoji-smile"></i> Иконки</h2>
+
+        <div class="alert alert-warning">
+            <h5><i class="bi bi-exclamation-triangle"></i> Важно!</h5>
+            <p class="mb-0">Bootstrap 5 полностью убрал Glyphicons. Все иконки нужно заменить на Bootstrap Icons или Font Awesome.</p>
+        </div>
+
+        <h3 id="glyphicons-replacement">Замена Glyphicons</h3>
+        <p>OpenCart 3.0.x.x использует как Glyphicons, так и Font Awesome. Вот таблица замены наиболее используемых иконок:</p>
+
+        <div class="table-responsive">
+            <table class="table table-bordered comparison-table">
+                <thead>
+                    <tr>
+                        <th>Glyphicons (Bootstrap 3)</th>
+                        <th>Bootstrap Icons</th>
+                        <th>Font Awesome</th>
+                        <th>Описание</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>glyphicon-shopping-cart</code></td>
+                        <td><code>bi-cart</code></td>
+                        <td><code>fa-shopping-cart</code></td>
+                        <td>Корзина</td>
+                    </tr>
+                    <tr>
+                        <td><code>glyphicon-user</code></td>
+                        <td><code>bi-person</code></td>
+                        <td><code>fa-user</code></td>
+                        <td>Пользователь</td>
+                    </tr>
+                    <tr>
+                        <td><code>glyphicon-search</code></td>
+                        <td><code>bi-search</code></td>
+                        <td><code>fa-search</code></td>
+                        <td>Поиск</td>
+                    </tr>
+                    <tr>
+                        <td><code>glyphicon-heart</code></td>
+                        <td><code>bi-heart</code></td>
+                        <td><code>fa-heart</code></td>
+                        <td>Избранное</td>
+                    </tr>
+                    <tr>
+                        <td><code>glyphicon-remove</code></td>
+                        <td><code>bi-x</code></td>
+                        <td><code>fa-times</code></td>
+                        <td>Закрыть/Удалить</td>
+                    </tr>
+                    <tr>
+                        <td><code>glyphicon-plus</code></td>
+                        <td><code>bi-plus</code></td>
+                        <td><code>fa-plus</code></td>
+                        <td>Добавить</td>
+                    </tr>
+                    <tr>
+                        <td><code>glyphicon-minus</code></td>
+                        <td><code>bi-dash</code></td>
+                        <td><code>fa-minus</code></td>
+                        <td>Убрать</td>
+                    </tr>
+                    <tr>
+                        <td><code>glyphicon-home</code></td>
+                        <td><code>bi-house</code></td>
+                        <td><code>fa-home</code></td>
+                        <td>Главная</td>
+                    </tr>
+                    <tr>
+                        <td><code>glyphicon-envelope</code></td>
+                        <td><code>bi-envelope</code></td>
+                        <td><code>fa-envelope</code></td>
+                        <td>Email</td>
+                    </tr>
+                    <tr>
+                        <td><code>glyphicon-phone</code></td>
+                        <td><code>bi-telephone</code></td>
+                        <td><code>fa-phone</code></td>
+                        <td>Телефон</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3 id="bootstrap-icons">Подключение Bootstrap Icons</h3>
+        
+        <div class="alert alert-success">
+            <h5><i class="bi bi-download"></i> Готовые Bootstrap Icons</h5>
+            <p class="mb-0">В папке <span class="file-path">catalog_bootstrap5/view/javascript/icons/</span> находится полная коллекция Bootstrap Icons в формате SVG (более 2000 иконок).</p>
+        </div>
+
+        <h4>Способы подключения Bootstrap Icons:</h4>
+
+        <h5>1. CDN (быстрое подключение):</h5>
+<pre><code class="language-html">&lt;!-- Bootstrap Icons CDN --&gt;
+&lt;link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"&gt;
+</code></pre>
+
+        <h5>2. Локальные файлы (рекомендуется):</h5>
+<pre><code class="language-html">&lt;!-- Bootstrap Icons локально --&gt;
+&lt;link href="catalog/view/javascript/bootstrap-icons/bootstrap-icons.css" rel="stylesheet"&gt;
+</code></pre>
+
+        <h5>3. Использование SVG иконок напрямую:</h5>
+        <p>Вы можете использовать SVG файлы напрямую из папки <span class="file-path">catalog/view/javascript/icons/</span>:</p>
+
+<pre><code class="language-html">&lt;!-- Прямое использование SVG --&gt;
+&lt;img src="catalog/view/javascript/icons/cart.svg" alt="Корзина" width="16" height="16"&gt;
+
+&lt;!-- Встроенный SVG --&gt;
+&lt;svg width="16" height="16" fill="currentColor" class="bi bi-cart"&gt;
+  &lt;use xlink:href="catalog/view/javascript/icons/cart.svg#cart"&gt;&lt;/use&gt;
+&lt;/svg&gt;
+
+&lt;!-- Через CSS background --&gt;
+&lt;style&gt;
+.icon-cart {
+  background-image: url('catalog/view/javascript/icons/cart.svg');
+  background-size: 16px 16px;
+  background-repeat: no-repeat;
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+}
+&lt;/style&gt;
+&lt;span class="icon-cart"&gt;&lt;/span&gt;
+</code></pre>
+
+        <h4>Создание CSS файла для Bootstrap Icons:</h4>
+        <p>Создайте файл <span class="file-path">catalog/view/javascript/bootstrap-icons/bootstrap-icons.css</span>:</p>
+
+<pre><code class="language-css">/* Bootstrap Icons CSS */
+@font-face {
+  font-family: "bootstrap-icons";
+  src: url("./fonts/bootstrap-icons.woff2?1.11.0") format("woff2"),
+       url("./fonts/bootstrap-icons.woff?1.11.0") format("woff");
+}
+
+.bi::before,
+[class^="bi-"]::before,
+[class*=" bi-"]::before {
+  display: inline-block;
+  font-family: "bootstrap-icons" !important;
+  font-style: normal;
+  font-weight: normal !important;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  vertical-align: -.125em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Основные иконки для OpenCart */
+.bi-cart::before { content: "\f1f6"; }
+.bi-cart-plus::before { content: "\f1f8"; }
+.bi-heart::before { content: "\f326"; }
+.bi-heart-fill::before { content: "\f327"; }
+.bi-search::before { content: "\f52a"; }
+.bi-person::before { content: "\f4da"; }
+.bi-house::before { content: "\f3b0"; }
+.bi-envelope::before { content: "\f32f"; }
+.bi-telephone::before { content: "\f5a3"; }
+.bi-geo-alt::before { content: "\f2f5"; }
+.bi-star::before { content: "\f588"; }
+.bi-star-fill::before { content: "\f586"; }
+.bi-eye::before { content: "\f30e"; }
+.bi-x::before { content: "\f62a"; }
+.bi-plus::before { content: "\f4fe"; }
+.bi-dash::before { content: "\f1d2"; }
+.bi-check::before { content: "\f26b"; }
+.bi-arrow-right::before { content: "\f138"; }
+.bi-arrow-left::before { content: "\f12f"; }
+.bi-chevron-down::before { content: "\f282"; }
+.bi-chevron-up::before { content: "\f289"; }
+.bi-list::before { content: "\f479"; }
+.bi-grid::before { content: "\f2f2"; }
+.bi-filter::before { content: "\f2e7"; }
+.bi-sort-down::before { content: "\f578"; }
+.bi-sort-up::before { content: "\f57a"; }
+.bi-bag::before { content: "\f1b1"; }
+.bi-credit-card::before { content: "\f1c4"; }
+.bi-truck::before { content: "\f5d1"; }
+.bi-shield-check::before { content: "\f565"; }
+.bi-award::before { content: "\f1a6"; }
+.bi-gift::before { content: "\f2f6"; }
+.bi-percent::before { content: "\f4e0"; }
+.bi-tags::before { content: "\f59c"; }
+.bi-bookmark::before { content: "\f1b7"; }
+.bi-share::before { content: "\f52d"; }
+.bi-printer::before { content: "\f4fd"; }
+.bi-download::before { content: "\f1c6"; }
+.bi-upload::before { content: "\f5e1"; }
+.bi-cloud-download::before { content: "\f1c0"; }
+.bi-cloud-upload::before { content: "\f1c3"; }
+</code></pre>
+
+        <h4>Популярные иконки для OpenCart:</h4>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Основные действия:</h6>
+                <ul class="list-unstyled small">
+                    <li><i class="bi bi-cart"></i> <code>bi-cart</code> - корзина</li>
+                    <li><i class="bi bi-cart-plus"></i> <code>bi-cart-plus</code> - добавить в корзину</li>
+                    <li><i class="bi bi-heart"></i> <code>bi-heart</code> - избранное</li>
+                    <li><i class="bi bi-search"></i> <code>bi-search</code> - поиск</li>
+                    <li><i class="bi bi-person"></i> <code>bi-person</code> - пользователь</li>
+                    <li><i class="bi bi-house"></i> <code>bi-house</code> - главная</li>
+                    <li><i class="bi bi-list"></i> <code>bi-list</code> - меню</li>
+                    <li><i class="bi bi-grid"></i> <code>bi-grid</code> - сетка</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h6>Интернет-магазин:</h6>
+                <ul class="list-unstyled small">
+                    <li><i class="bi bi-bag"></i> <code>bi-bag</code> - сумка покупок</li>
+                    <li><i class="bi bi-credit-card"></i> <code>bi-credit-card</code> - оплата</li>
+                    <li><i class="bi bi-truck"></i> <code>bi-truck</code> - доставка</li>
+                    <li><i class="bi bi-star"></i> <code>bi-star</code> - рейтинг</li>
+                    <li><i class="bi bi-eye"></i> <code>bi-eye</code> - просмотр</li>
+                    <li><i class="bi bi-arrow-left-right"></i> <code>bi-arrow-left-right</code> - сравнение</li>
+                    <li><i class="bi bi-percent"></i> <code>bi-percent</code> - скидка</li>
+                    <li><i class="bi bi-gift"></i> <code>bi-gift</code> - подарок</li>
+                </ul>
+            </div>
+        </div>
+
+        <h4>Примеры замены иконок в шаблонах:</h4>
+
+<pre><code class="language-html">&lt;!-- В header.twig - поиск --&gt;
+&lt;!-- Bootstrap 3 --&gt;
+&lt;button class="btn btn-lg"&gt;&lt;i class="fa fa-search"&gt;&lt;/i&gt;&lt;/button&gt;
+
+&lt;!-- Bootstrap 5 --&gt;
+&lt;button class="btn btn-lg"&gt;&lt;i class="bi bi-search"&gt;&lt;/i&gt;&lt;/button&gt;
+
+&lt;!-- В cart.twig - корзина --&gt;
+&lt;!-- Bootstrap 3 --&gt;
+&lt;i class="fa fa-shopping-cart"&gt;&lt;/i&gt;
+
+&lt;!-- Bootstrap 5 --&gt;
+&lt;i class="bi bi-cart"&gt;&lt;/i&gt;
+
+&lt;!-- В menu.twig - мобильное меню --&gt;
+&lt;!-- Bootstrap 3 --&gt;
+&lt;i class="fa fa-bars"&gt;&lt;/i&gt;
+
+&lt;!-- Bootstrap 5 --&gt;
+&lt;span class="navbar-toggler-icon"&gt;&lt;/span&gt;
+&lt;!-- или --&gt;
+&lt;i class="bi bi-list"&gt;&lt;/i&gt;
+
+&lt;!-- Кнопки действий --&gt;
+&lt;!-- Добавить в корзину --&gt;
+&lt;button class="btn btn-primary"&gt;
+  &lt;i class="bi bi-cart-plus"&gt;&lt;/i&gt; В корзину
+&lt;/button&gt;
+
+&lt;!-- Добавить в избранное --&gt;
+&lt;button class="btn btn-outline-danger"&gt;
+  &lt;i class="bi bi-heart"&gt;&lt;/i&gt; В избранное
+&lt;/button&gt;
+
+&lt;!-- Сравнить --&gt;
+&lt;button class="btn btn-outline-info"&gt;
+  &lt;i class="bi bi-arrow-left-right"&gt;&lt;/i&gt; Сравнить
+&lt;/button&gt;
+
+&lt;!-- Быстрый просмотр --&gt;
+&lt;button class="btn btn-outline-secondary"&gt;
+  &lt;i class="bi bi-eye"&gt;&lt;/i&gt; Просмотр
+&lt;/button&gt;
+</code></pre>
+
+        <h4>Создание CSS для совместимости</h4>
+        <p>Добавьте в <span class="file-path">stylesheet.css</span> классы для плавного перехода:</p>
+
+<pre><code class="language-css">/* Совместимость иконок */
+.glyphicon-shopping-cart:before { content: "🛒"; }
+.glyphicon-user:before { content: "👤"; }
+.glyphicon-search:before { content: "🔍"; }
+.glyphicon-heart:before { content: "♥"; }
+.glyphicon-remove:before { content: "✕"; }
+
+/* Или используйте Bootstrap Icons */
+.icon-cart::before { content: "\f1f6"; font-family: "bootstrap-icons"; }
+.icon-user::before { content: "\f4da"; font-family: "bootstrap-icons"; }
+.icon-search::before { content: "\f52a"; font-family: "bootstrap-icons"; }
+.icon-heart::before { content: "\f326"; font-family: "bootstrap-icons"; }
+.icon-close::before { content: "\f62a"; font-family: "bootstrap-icons"; }
+
+/* Размеры иконок */
+.bi {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.bi-lg {
+    font-size: 1.25rem;
+}
+
+.bi-xl {
+    font-size: 1.5rem;
+}
+
+.bi-2x {
+    font-size: 2rem;
+}
+
+/* Цвета иконок */
+.text-primary .bi { color: var(--bs-primary); }
+.text-secondary .bi { color: var(--bs-secondary); }
+.text-success .bi { color: var(--bs-success); }
+.text-danger .bi { color: var(--bs-danger); }
+.text-warning .bi { color: var(--bs-warning); }
+.text-info .bi { color: var(--bs-info); }
+</code></pre>
+
+        <h2 id="templates"><i class="bi bi-file-earmark-code"></i> Обновление шаблонов</h2>
+
+        <h3 id="header-template">Обновление header.twig</h3>
+        <p>Полная замена секции подключения ресурсов в <span class="file-path">catalog/view/theme/default/template/common/header.twig</span>:</p>
+
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html dir="{{ direction }}" lang="{{ lang }}"&gt;
+&lt;head&gt;
+&lt;meta charset="UTF-8" /&gt;
+&lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;
+&lt;meta http-equiv="X-UA-Compatible" content="IE=edge"&gt;
+&lt;title&gt;{{ title }}&lt;/title&gt;
+{% if robots %}
+&lt;meta name="robots" content="{{ robots }}" /&gt;
+{% endif %}
+&lt;base href="{{ base }}" /&gt;
+{% if description %}
+&lt;meta name="description" content="{{ description }}" /&gt;
+{% endif %}
+{% if keywords %}
+&lt;meta name="keywords" content="{{ keywords }}" /&gt;
+{% endif %}
+
+&lt;!-- Open Graph --&gt;
+&lt;meta property="og:title" content="{{ title }}" /&gt;
+&lt;meta property="og:type" content="website" /&gt;
+&lt;meta property="og:url" content="{{ og_url }}" /&gt;
+{% if og_image %}
+&lt;meta property="og:image" content="{{ og_image }}" /&gt;
+{% else %}
+&lt;meta property="og:image" content="{{ logo }}" /&gt;
+{% endif %}
+&lt;meta property="og:site_name" content="{{ name }}" /&gt;
+
+&lt;!-- jQuery (для совместимости с OpenCart) --&gt;
+&lt;script src="catalog/view/javascript/jquery/jquery-2.1.1.min.js" type="text/javascript"&gt;&lt;/script&gt;
+
+&lt;!-- Bootstrap 5 --&gt;
+&lt;link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"&gt;&lt;/script&gt;
+
+&lt;!-- Bootstrap Icons --&gt;
+&lt;link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"&gt;
+
+&lt;!-- Font Awesome (для совместимости) --&gt;
+&lt;link href="catalog/view/javascript/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css" /&gt;
+
+&lt;!-- Google Fonts --&gt;
+&lt;link href="//fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet" type="text/css" /&gt;
+
+&lt;!-- Основные стили темы --&gt;
+&lt;link href="catalog/view/theme/default/stylesheet/stylesheet.css" rel="stylesheet"&gt;
+
+&lt;!-- Дополнительные стили --&gt;
+{% for style in styles %}
+&lt;link href="{{ style.href }}" type="text/css" rel="{{ style.rel }}" media="{{ style.media }}" /&gt;
+{% endfor %}
+
+&lt;!-- Дополнительные скрипты --&gt;
+{% for script in scripts %}
+&lt;script src="{{ script }}" type="text/javascript"&gt;&lt;/script&gt;
+{% endfor %}
+
+&lt;!-- Основной JavaScript --&gt;
+&lt;!-- script src="catalog/view/javascript/common.js" type="text/javascript"&gt;&lt;/script --&gt;
+&lt;!-- Файл common.js предназначен для OpenCart, не для этой документации --&gt;
+
+&lt;!-- Дополнительные ссылки --&gt;
+{% for link in links %}
+&lt;link href="{{ link.href }}" rel="{{ link.rel }}" /&gt;
+{% endfor %}
+
+&lt;!-- Аналитика --&gt;
+{% for analytic in analytics %}
+{{ analytic }}
+{% endfor %}
+&lt;/head&gt;
+&lt;body&gt;
+</code></pre>
+
+        <h3 id="menu-template">Полное обновление menu.twig</h3>
+        <p>Замените содержимое <span class="file-path">catalog/view/theme/default/template/common/menu.twig</span>:</p>
+
+<pre><code class="language-html">{% if categories %}
+&lt;div class="container-fluid"&gt;
+  &lt;nav id="menu" class="navbar navbar-expand-lg navbar-dark"&gt;
+    &lt;div class="container"&gt;
+      &lt;span class="navbar-brand d-lg-none"&gt;{{ text_category }}&lt;/span&gt;
+      
+      &lt;button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"&gt;
+        &lt;span class="navbar-toggler-icon"&gt;&lt;/span&gt;
+      &lt;/button&gt;
+      
+      &lt;div class="collapse navbar-collapse" id="navbarNav"&gt;
+        &lt;ul class="navbar-nav me-auto"&gt;
+          {% for category in categories %}
+          {% if category.children %}
+          &lt;li class="nav-item dropdown"&gt;
+            &lt;a class="nav-link dropdown-toggle" href="{{ category.href }}" id="navbarDropdown{{ loop.index }}" role="button" data-bs-toggle="dropdown" aria-expanded="false"&gt;
+              {{ category.name }}
+            &lt;/a&gt;
+            &lt;div class="dropdown-menu mega-menu" aria-labelledby="navbarDropdown{{ loop.index }}"&gt;
+              &lt;div class="container"&gt;
+                &lt;div class="row"&gt;
+                  {% for children in category.children|batch(category.children|length / category.column|round(1, 'ceil')) %}
+                  &lt;div class="col-md-{{ (12 / category.column)|round }}"&gt;
+                    {% for child in children %}
+                    &lt;a class="dropdown-item" href="{{ child.href }}"&gt;{{ child.name }}&lt;/a&gt;
+                    {% endfor %}
+                  &lt;/div&gt;
+                  {% endfor %}
+                &lt;/div&gt;
+                &lt;div class="dropdown-divider"&gt;&lt;/div&gt;
+                &lt;a class="dropdown-item fw-bold text-primary" href="{{ category.href }}"&gt;
+                  &lt;i class="bi bi-arrow-right"&gt;&lt;/i&gt; {{ text_all }} {{ category.name }}
+                &lt;/a&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+          &lt;/li&gt;
+          {% else %}
+          &lt;li class="nav-item"&gt;
+            &lt;a class="nav-link" href="{{ category.href }}"&gt;{{ category.name }}&lt;/a&gt;
+          &lt;/li&gt;
+          {% endif %}
+          {% endfor %}
+        &lt;/ul&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/nav&gt;
+&lt;/div&gt;
+{% endif %}
+</code></pre>
+
+        <h3 id="cart-template">Полное обновление cart.twig</h3>
+        <p>Замените содержимое <span class="file-path">catalog/view/theme/default/template/common/cart.twig</span>:</p>
+
+<pre><code class="language-html">&lt;div id="cart" class="dropdown"&gt;
+  &lt;button class="btn btn-dark btn-lg dropdown-toggle w-100 d-flex align-items-center justify-content-between" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-loading-text="{{ text_loading }}"&gt;
+    &lt;span&gt;
+      &lt;i class="bi bi-cart me-2"&gt;&lt;/i&gt;
+      &lt;span id="cart-total"&gt;{{ text_items }}&lt;/span&gt;
+    &lt;/span&gt;
+  &lt;/button&gt;
+  
+  &lt;div class="dropdown-menu dropdown-menu-end" style="min-width: 400px; max-width: 500px;"&gt;
+    {% if products or vouchers %}
+    &lt;div class="dropdown-header"&gt;
+      &lt;h6 class="mb-0"&gt;&lt;i class="bi bi-cart"&gt;&lt;/i&gt; Корзина&lt;/h6&gt;
+    &lt;/div&gt;
+    
+    &lt;div class="dropdown-item-text p-0"&gt;
+      &lt;div class="table-responsive"&gt;
+        &lt;table class="table table-sm mb-0"&gt;
+          &lt;tbody&gt;
+            {% for product in products %}
+            &lt;tr&gt;
+              &lt;td class="text-center" style="width: 60px;"&gt;
+                {% if product.thumb %}
+                &lt;a href="{{ product.href }}"&gt;
+                  &lt;img src="{{ product.thumb }}" alt="{{ product.name }}" title="{{ product.name }}" class="img-thumbnail" style="width: 40px; height: 40px; object-fit: cover;"&gt;
+                &lt;/a&gt;
+                {% endif %}
+              &lt;/td&gt;
+              &lt;td&gt;
+                &lt;a href="{{ product.href }}" class="text-decoration-none fw-medium"&gt;{{ product.name }}&lt;/a&gt;
+                {% if product.option %}
+                  {% for option in product.option %}
+                  &lt;br&gt;&lt;small class="text-muted"&gt;{{ option.name }}: {{ option.value }}&lt;/small&gt;
+                  {% endfor %}
+                {% endif %}
+                {% if product.recurring %}
+                &lt;br&gt;&lt;small class="text-muted"&gt;{{ text_recurring }}: {{ product.recurring }}&lt;/small&gt;
+                {% endif %}
+              &lt;/td&gt;
+              &lt;td class="text-center" style="width: 60px;"&gt;
+                &lt;span class="badge bg-secondary"&gt;{{ product.quantity }}&lt;/span&gt;
+              &lt;/td&gt;
+              &lt;td class="text-end fw-bold" style="width: 80px;"&gt;{{ product.total }}&lt;/td&gt;
+              &lt;td class="text-center" style="width: 40px;"&gt;
+                &lt;button type="button" onclick="cart.remove('{{ product.cart_id }}');" title="{{ button_remove }}" class="btn btn-outline-danger btn-sm"&gt;
+                  &lt;i class="bi bi-x"&gt;&lt;/i&gt;
+                &lt;/button&gt;
+              &lt;/td&gt;
+            &lt;/tr&gt;
+            {% endfor %}
+            
+            {% for voucher in vouchers %}
+            &lt;tr&gt;
+              &lt;td class="text-center"&gt;
+                &lt;i class="bi bi-gift text-primary"&gt;&lt;/i&gt;
+              &lt;/td&gt;
+              &lt;td&gt;{{ voucher.description }}&lt;/td&gt;
+              &lt;td class="text-center"&gt;&lt;span class="badge bg-secondary"&gt;1&lt;/span&gt;&lt;/td&gt;
+              &lt;td class="text-end fw-bold"&gt;{{ voucher.amount }}&lt;/td&gt;
+              &lt;td class="text-center"&gt;
+                &lt;button type="button" onclick="voucher.remove('{{ voucher.key }}');" title="{{ button_remove }}" class="btn btn-outline-danger btn-sm"&gt;
+                  &lt;i class="bi bi-x"&gt;&lt;/i&gt;
+                &lt;/button&gt;
+              &lt;/td&gt;
+            &lt;/tr&gt;
+            {% endfor %}
+          &lt;/tbody&gt;
+        &lt;/table&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    
+    &lt;div class="dropdown-divider"&gt;&lt;/div&gt;
+    
+    &lt;div class="dropdown-item-text"&gt;
+      &lt;table class="table table-sm mb-2"&gt;
+        {% for total in totals %}
+        &lt;tr&gt;
+          &lt;td class="text-end"&gt;&lt;strong&gt;{{ total.title }}&lt;/strong&gt;&lt;/td&gt;
+          &lt;td class="text-end"&gt;&lt;strong&gt;{{ total.text }}&lt;/strong&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+        {% endfor %}
+      &lt;/table&gt;
+      
+      &lt;div class="d-grid gap-2"&gt;
+        &lt;a href="{{ cart }}" class="btn btn-outline-primary"&gt;
+          &lt;i class="bi bi-cart"&gt;&lt;/i&gt; {{ text_cart }}
+        &lt;/a&gt;
+        &lt;a href="{{ checkout }}" class="btn btn-primary"&gt;
+          &lt;i class="bi bi-credit-card"&gt;&lt;/i&gt; {{ text_checkout }}
+        &lt;/a&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    
+    {% else %}
+    &lt;div class="dropdown-item-text text-center py-4"&gt;
+      &lt;i class="bi bi-cart-x text-muted" style="font-size: 2rem;"&gt;&lt;/i&gt;
+      &lt;p class="mb-0 mt-2"&gt;{{ text_empty }}&lt;/p&gt;
+    &lt;/div&gt;
+    {% endif %}
+  &lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
+
+        <h3 id="footer-template">Обновление footer.twig</h3>
+        <p>Улучшенная версия <span class="file-path">catalog/view/theme/default/template/common/footer.twig</span>:</p>
+
+<pre><code class="language-html">&lt;footer class="bg-light py-5 mt-5"&gt;
+  &lt;div class="container"&gt;
+    &lt;div class="row g-4"&gt;
+      {% if informations %}
+      &lt;div class="col-sm-6 col-md-3"&gt;
+        &lt;h5 class="fw-bold mb-3"&gt;{{ text_information }}&lt;/h5&gt;
+        &lt;ul class="list-unstyled"&gt;
+         {% for information in informations %}
+          &lt;li class="mb-2"&gt;
+            &lt;a href="{{ information.href }}" class="text-decoration-none text-muted hover-primary"&gt;
+              {{ information.title }}
+            &lt;/a&gt;
+          &lt;/li&gt;
+          {% endfor %}
+        &lt;/ul&gt;
+      &lt;/div&gt;
+      {% endif %}
+      
+      &lt;div class="col-sm-6 col-md-3"&gt;
+        &lt;h5 class="fw-bold mb-3"&gt;{{ text_service }}&lt;/h5&gt;
+        &lt;ul class="list-unstyled"&gt;
+          &lt;li class="mb-2"&gt;
+            &lt;a href="{{ contact }}" class="text-decoration-none text-muted hover-primary"&gt;
+              &lt;i class="bi bi-envelope me-2"&gt;&lt;/i&gt;{{ text_contact }}
+            &lt;/a&gt;
+          &lt;/li&gt;
+          &lt;li class="mb-2"&gt;
+            &lt;a href="{{ return }}" class="text-decoration-none text-muted hover-primary"&gt;
+              &lt;i class="bi bi-arrow-return-left me-2"&gt;&lt;/i&gt;{{ text_return }}
+            &lt;/a&gt;
+          &lt;/li&gt;
+          &lt;li class="mb-2"&gt;
+            &lt;a href="{{ sitemap }}" class="text-decoration-none text-muted hover-primary"&gt;
+              &lt;i class="bi bi-map me-2"&gt;&lt;/i&gt;{{ text_sitemap }}
+            &lt;/a&gt;
+          &lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/div&gt;
+      
+      &lt;div class="col-sm-6 col-md-3"&gt;
+        &lt;h5 class="fw-bold mb-3"&gt;{{ text_extra }}&lt;/h5&gt;
+        &lt;ul class="list-unstyled"&gt;
+          &lt;li class="mb-2"&gt;
+            &lt;a href="{{ manufacturer }}" class="text-decoration-none text-muted hover-primary"&gt;
+              &lt;i class="bi bi-building me-2"&gt;&lt;/i&gt;{{ text_manufacturer }}
+            &lt;/a&gt;
+          &lt;/li&gt;
+          &lt;li class="mb-2"&gt;
+            &lt;a href="{{ voucher }}" class="text-decoration-none text-muted hover-primary"&gt;
+              &lt;i class="bi bi-gift me-2"&gt;&lt;/i&gt;{{ text_voucher }}
+            &lt;/a&gt;
+          &lt;/li&gt;
+          &lt;li class="mb-2"&gt;
+            &lt;a href="{{ affiliate }}" class="text-decoration-none text-muted hover-primary"&gt;
+              &lt;i class="bi bi-people me-2"&gt;&lt;/i&gt;{{ text_affiliate }}
+            &lt;/a&gt;
+          &lt;/li&gt;
+          &lt;li class="mb-2"&gt;
+            &lt;a href="{{ special }}" class="text-decoration-none text-muted hover-primary"&gt;
+              &lt;i class="bi bi-star me-2"&gt;&lt;/i&gt;{{ text_special }}
+            &lt;/a&gt;
+          &lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/div&gt;
+      
+      &lt;div class="col-sm-6 col-md-3"&gt;
+        &lt;h5 class="fw-bold mb-3"&gt;{{ text_account }}&lt;/h5&gt;
+        &lt;ul class="list-unstyled"&gt;
+          &lt;li class="mb-2"&gt;
+            &lt;a href="{{ account }}" class="text-decoration-none text-muted hover-primary"&gt;
+              &lt;i class="bi bi-person me-2"&gt;&lt;/i&gt;{{ text_account }}
+            &lt;/a&gt;
+          &lt;/li&gt;
+          &lt;li class="mb-2"&gt;
+            &lt;a href="{{ order }}" class="text-decoration-none text-muted hover-primary"&gt;
+              &lt;i class="bi bi-bag me-2"&gt;&lt;/i&gt;{{ text_order }}
+            &lt;/a&gt;
+          &lt;/li&gt;
+          &lt;li class="mb-2"&gt;
+            &lt;a href="{{ wishlist }}" class="text-decoration-none text-muted hover-primary"&gt;
+              &lt;i class="bi bi-heart me-2"&gt;&lt;/i&gt;{{ text_wishlist }}
+            &lt;/a&gt;
+          &lt;/li&gt;
+          &lt;li class="mb-2"&gt;
+            &lt;a href="{{ newsletter }}" class="text-decoration-none text-muted hover-primary"&gt;
+              &lt;i class="bi bi-envelope-paper me-2"&gt;&lt;/i&gt;{{ text_newsletter }}
+            &lt;/a&gt;
+          &lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    
+    &lt;hr class="my-4"&gt;
+    
+    &lt;div class="row align-items-center"&gt;
+      &lt;div class="col-md-6"&gt;
+        &lt;p class="mb-0 text-muted"&gt;{{ powered }}&lt;/p&gt;
+      &lt;/div&gt;
+      &lt;div class="col-md-6 text-md-end"&gt;
+        &lt;p class="mb-0 text-muted"&gt;
+          &lt;small&gt;© {{ "now"|date("Y") }} {{ name }}. Все права защищены.&lt;/small&gt;
+        &lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/footer&gt;
+
+&lt;!-- Дополнительные стили --&gt;
+{% for style in styles %}
+&lt;link href="{{ style.href }}" type="text/css" rel="{{ style.rel }}" media="{{ style.media }}" /&gt;
+{% endfor %}
+
+&lt;!-- Дополнительные скрипты --&gt;
+{% for script in scripts %}
+&lt;script src="{{ script }}" type="text/javascript"&gt;&lt;/script&gt;
+{% endfor %}
+
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+        <h2 id="css-updates"><i class="bi bi-palette"></i> Обновление CSS</h2>
+
+        <h3 id="stylesheet-migration">Обновление stylesheet.css</h3>
+        <p>Обновите <span class="file-path">catalog/view/theme/default/stylesheet/stylesheet.css</span> для совместимости с Bootstrap 5:</p>
+
+<pre><code class="language-css">/* Базовые стили */
+body {
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 400;
+    color: #212529;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* Заголовки */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    color: #343a40;
+    margin-bottom: 1rem;
+}
+
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.75rem; }
+h4 { font-size: 1.5rem; }
+h5 { font-size: 1.25rem; }
+h6 { font-size: 1rem; }
+
+/* Ссылки */
+a {
+    color: var(--bs-primary);
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--bs-primary);
+    text-decoration: underline;
+}
+
+.hover-primary:hover {
+    color: var(--bs-primary) !important;
+}
+
+/* Формы */
+.form-control, .form-select {
+    font-size: 14px;
+    border-color: #ced4da;
+    box-shadow: none;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+/* Обязательные поля */
+.required .form-label::after {
+    content: ' *';
+    color: var(--bs-danger);
+    font-weight: 700;
+}
+
+/* Верхняя панель */
+#top {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    padding: 0.5rem 0;
+    font-size: 0.875rem;
+}
+
+#top .btn-link {
+    color: #6c757d;
+    text-decoration: none;
+    padding: 0;
+    border: none;
+    background: none;
+}
+
+#top .btn-link:hover {
+    color: var(--bs-primary);
+    text-decoration: underline;
+}
+
+#top-links {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Логотип */
+#logo {
+    margin-bottom: 1rem;
+}
+
+#logo img {
+    max-height: 60px;
+    width: auto;
+}
+
+/* Поиск */
+#search {
+    margin-bottom: 1rem;
+}
+
+#search .input-group {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+#search .form-control {
+    border: 1px solid #ced4da;
+    border-right: none;
+    font-size: 1rem;
+    padding: 0.75rem 1rem;
+}
+
+#search .btn {
+    border: 1px solid #ced4da;
+    border-left: none;
+    background: var(--bs-primary);
+    color: white;
+    padding: 0.75rem 1.5rem;
+}
+
+#search .btn:hover {
+    background: var(--bs-primary);
+    opacity: 0.9;
+}
+
+/* Корзина */
+#cart {
+    margin-bottom: 1rem;
+}
+
+#cart .btn {
+    font-size: 1rem;
+    font-weight: 500;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+}
+
+#cart .dropdown-menu {
+    border: none;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    border-radius: 0.5rem;
+    padding: 0;
+    overflow: hidden;
+}
+
+#cart .dropdown-menu .table {
+    margin-bottom: 0;
+}
+
+#cart .dropdown-menu .table td {
+    border: none;
+    padding: 0.5rem;
+    vertical-align: middle;
+}
+
+/* Меню */
+#menu {
+    background: linear-gradient(135deg, var(--bs-primary) 0%, #0056b3 100%);
+    border-radius: 0.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+#menu .navbar-nav .nav-link {
+    color: white;
+    font-weight: 500;
+    padding: 1rem 1.5rem;
+    transition: all 0.3s ease;
+}
+
+#menu .navbar-nav .nav-link:hover,
+#menu .navbar-nav .nav-link:focus {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 0.25rem;
+}
+
+#menu .dropdown-menu {
+    border: none;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-top: 0.5rem;
+}
+
+#menu .mega-menu {
+    min-width: 600px;
+}
+
+#menu .dropdown-item {
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    transition: all 0.2s ease;
+}
+
+#menu .dropdown-item:hover {
+    background-color: var(--bs-primary);
+    color: white;
+}
+
+/* Товары */
+.product-layout {
+    margin-bottom: 2rem;
+}
+
+.product-thumb {
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.product-thumb:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.product-thumb .image {
+    position: relative;
+    overflow: hidden;
+}
+
+.product-thumb .image img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.product-thumb:hover .image img {
+    transform: scale(1.05);
+}
+
+.product-thumb .caption {
+    padding: 1rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.product-thumb .caption h4 {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+.product-thumb .caption h4 a {
+    color: #343a40;
+    text-decoration: none;
+}
+
+.product-thumb .caption h4 a:hover {
+    color: var(--bs-primary);
+}
+
+.product-thumb .caption .description {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    flex-grow: 1;
+}
+
+.product-thumb .caption .price {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--bs-primary);
+    margin-bottom: 1rem;
+}
+
+.product-thumb .caption .price-old {
+    color: #6c757d;
+    text-decoration: line-through;
+    font-size: 1rem;
+    font-weight: normal;
+    margin-right: 0.5rem;
+}
+
+.product-thumb .button-group {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: auto;
+}
+
+.product-thumb .button-group .btn {
+    flex: 1;
+    font-size: 0.875rem;
+    padding: 0.5rem;
+}
+
+/* Пагинация */
+.pagination {
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.pagination .page-link {
+    color: var(--bs-primary);
+    border-color: #dee2e6;
+    padding: 0.75rem 1rem;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+/* Хлебные крошки */
+.breadcrumb {
+    background-color: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.breadcrumb-item a {
+    color: var(--bs-primary);
+    text-decoration: none;
+}
+
+.breadcrumb-item a:hover {
+    text-decoration: underline;
+}
+
+/* Алерты */
+.alert {
+    border: none;
+    border-radius: 0.5rem;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.alert .btn-close {
+    padding: 0.75rem;
+}
+
+/* Утилиты */
+.text-decoration-none {
+    text-decoration: none !important;
+}
+
+.hover-underline:hover {
+    text-decoration: underline !important;
+}
+
+/* Адаптивность */
+@media (max-width: 767.98px) {
+    #menu .mega-menu {
+        min-width: auto;
+        width: 100%;
+    }
+    
+    .product-thumb .image img {
+        height: 200px;
+    }
+    
+    #cart .dropdown-menu {
+        min-width: 300px;
+        max-width: 90vw;
+    }
+}
+
+/* Темная тема (опционально) */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bs-body-bg: #212529;
+        --bs-body-color: #dee2e6;
+    }
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Кастомные переменные Bootstrap 5 */
+:root {
+    --bs-primary: #229ac8;
+    --bs-primary-rgb: 34, 154, 200;
+    --bs-secondary: #6c757d;
+    --bs-success: #198754;
+    --bs-info: #0dcaf0;
+    --bs-warning: #ffc107;
+    --bs-danger: #dc3545;
+    --bs-light: #f8f9fa;
+    --bs-dark: #212529;
+}
+</code></pre>
+
+        <h3 id="custom-styles">Дополнительные кастомные стили</h3>
+        <p>Добавьте эти стили для улучшения внешнего вида:</p>
+
+<pre><code class="language-css">/* Улучшения для мобильных устройств */
+@media (max-width: 575.98px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    #search .input-group {
+        margin-bottom: 1rem;
+    }
+    
+    #cart .btn {
+        font-size: 0.9rem;
+        padding: 0.6rem 1rem;
+    }
+    
+    .product-thumb .caption {
+        padding: 0.75rem;
+    }
+    
+    .product-thumb .caption h4 {
+        font-size: 1rem;
+    }
+    
+    .product-thumb .button-group .btn {
+        font-size: 0.8rem;
+        padding: 0.4rem;
+    }
+}
+
+/* Улучшения для планшетов */
+@media (min-width: 576px) and (max-width: 991.98px) {
+    .product-thumb .image img {
+        height: 220px;
+    }
+}
+
+/* Улучшения для десктопа */
+@media (min-width: 1200px) {
+    .container {
+        max-width: 1200px;
+    }
+    
+    .product-thumb .image img {
+        height: 280px;
+    }
+}
+
+/* Состояния загрузки */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Улучшения доступности */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Focus states */
+.btn:focus,
+.form-control:focus,
+.form-select:focus {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+}
+
+/* Высокий контраст */
+@media (prefers-contrast: high) {
+    .btn {
+        border-width: 2px;
+    }
+    
+    .card {
+        border-width: 2px;
+    }
+}
+
+/* Уменьшенная анимация */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+</code></pre>
+
+        <h2 id="testing"><i class="bi bi-bug"></i> Тестирование</h2>
+
+        <div class="alert alert-info">
+            <h5><i class="bi bi-info-circle"></i> Важность тестирования</h5>
+            <p class="mb-0">Тщательное тестирование критически важно для успешной миграции. Проверьте все функции на разных устройствах и браузерах.</p>
+        </div>
+
+        <h3 id="browser-testing">Тестирование в браузерах</h3>
+        <p>Протестируйте сайт в следующих браузерах:</p>
+
+        <div class="row">
+            <div class="col-md-6">
+                <h5>Десктоп браузеры:</h5>
+                <ul>
+                    <li>Google Chrome (последняя версия)</li>
+                    <li>Mozilla Firefox (последняя версия)</li>
+                    <li>Safari (macOS)</li>
+                    <li>Microsoft Edge</li>
+                    <li>Internet Explorer 11 (если требуется поддержка)</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h5>Мобильные браузеры:</h5>
+                <ul>
+                    <li>Chrome Mobile (Android)</li>
+                    <li>Safari Mobile (iOS)</li>
+                    <li>Samsung Internet</li>
+                    <li>Firefox Mobile</li>
+                </ul>
+            </div>
+        </div>
+
+        <h3 id="responsive-testing">Тестирование адаптивности</h3>
+        <p>Проверьте отображение на следующих разрешениях:</p>
+
+        <div class="table-responsive">
+            <table class="table table-bordered comparison-table">
+                <thead>
+                    <tr>
+                        <th>Устройство</th>
+                        <th>Разрешение</th>
+                        <th>Bootstrap Breakpoint</th>
+                        <th>Что проверить</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Мобильный телефон</td>
+                        <td>320px - 575px</td>
+                        <td>xs</td>
+                        <td>Меню-гамбургер, корзина, формы</td>
+                    </tr>
+                    <tr>
+                        <td>Планшет (портрет)</td>
+                        <td>576px - 767px</td>
+                        <td>sm</td>
+                        <td>Сетка товаров, навигация</td>
+                    </tr>
+                    <tr>
+                        <td>Планшет (альбом)</td>
+                        <td>768px - 991px</td>
+                        <td>md</td>
+                        <td>Боковые колонки, меню</td>
+                    </tr>
+                    <tr>
+                        <td>Десктоп</td>
+                        <td>992px - 1199px</td>
+                        <td>lg</td>
+                        <td>Полная функциональность</td>
+                    </tr>
+                    <tr>
+                        <td>Большой десктоп</td>
+                        <td>1200px+</td>
+                        <td>xl, xxl</td>
+                        <td>Максимальная ширина контента</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h4>Чек-лист для тестирования страниц:</h4>
+
+        <div class="row">
+            <div class="col-md-6">
+                <h5><i class="bi bi-house"></i> Главная страница:</h5>
+                <ul class="list-unstyled">
+                    <li><i class="bi bi-check-square"></i> Слайдер/баннеры</li>
+                    <li><i class="bi bi-check-square"></i> Рекомендуемые товары</li>
+                    <li><i class="bi bi-check-square"></i> Категории</li>
+                    <li><i class="bi bi-check-square"></i> Поиск</li>
+                    <li><i class="bi bi-check-square"></i> Корзина</li>
+                    <li><i class="bi bi-check-square"></i> Меню</li>
+                </ul>
+
+                <h5><i class="bi bi-grid"></i> Страница категории:</h5>
+                <ul class="list-unstyled">
+                    <li><i class="bi bi-check-square"></i> Сетка/список товаров</li>
+                    <li><i class="bi bi-check-square"></i> Фильтры</li>
+                    <li><i class="bi bi-check-square"></i> Сортировка</li>
+                    <li><i class="bi bi-check-square"></i> Пагинация</li>
+                    <li><i class="bi bi-check-square"></i> Хлебные крошки</li>
+                </ul>
+
+                <h5><i class="bi bi-box"></i> Страница товара:</h5>
+                <ul class="list-unstyled">
+                    <li><i class="bi bi-check-square"></i> Галерея изображений</li>
+                    <li><i class="bi bi-check-square"></i> Опции товара</li>
+                    <li><i class="bi bi-check-square"></i> Кнопка "В корзину"</li>
+                    <li><i class="bi bi-check-square"></i> Табы (описание, отзывы)</li>
+                    <li><i class="bi bi-check-square"></i> Похожие товары</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h5><i class="bi bi-cart"></i> Корзина:</h5>
+                <ul class="list-unstyled">
+                    <li><i class="bi bi-check-square"></i> Добавление товаров</li>
+                    <li><i class="bi bi-check-square"></i> Изменение количества</li>
+                    <li><i class="bi bi-check-square"></i> Удаление товаров</li>
+                    <li><i class="bi bi-check-square"></i> Расчет итогов</li>
+                    <li><i class="bi bi-check-square"></i> Купоны/скидки</li>
+                </ul>
+
+                <h5><i class="bi bi-credit-card"></i> Оформление заказа:</h5>
+                <ul class="list-unstyled">
+                    <li><i class="bi bi-check-square"></i> Формы адресов</li>
+                    <li><i class="bi bi-check-square"></i> Способы доставки</li>
+                    <li><i class="bi bi-check-square"></i> Способы оплаты</li>
+                    <li><i class="bi bi-check-square"></i> Валидация форм</li>
+                    <li><i class="bi bi-check-square"></i> Подтверждение заказа</li>
+                </ul>
+
+                <h5><i class="bi bi-person"></i> Личный кабинет:</h5>
+                <ul class="list-unstyled">
+                    <li><i class="bi bi-check-square"></i> Регистрация</li>
+                    <li><i class="bi bi-check-square"></i> Авторизация</li>
+                    <li><i class="bi bi-check-square"></i> Профиль</li>
+                    <li><i class="bi bi-check-square"></i> История заказов</li>
+                    <li><i class="bi bi-check-square"></i> Список желаний</li>
+                </ul>
+            </div>
+        </div>
+
+        <h4>Инструменты для тестирования:</h4>
+
+<pre><code class="language-bash"># Lighthouse CLI для анализа производительности
+npm install -g lighthouse
+lighthouse https://your-site.com --output html --output-path ./report.html
+
+# Проверка адаптивности с помощью Chrome DevTools
+# 1. Откройте DevTools (F12)
+# 2. Нажмите Toggle Device Toolbar (Ctrl+Shift+M)
+# 3. Выберите различные устройства для тестирования
+</code></pre>
+
+        <h4>Автоматизированное тестирование:</h4>
+
+<pre><code class="language-javascript">// Пример теста с Playwright (Node.js)
+// const { test, expect } = require('@playwright/test');
+
+test('Bootstrap 5 migration test', async ({ page }) => {
+    await page.goto('https://your-opencart-site.com');
+    
+    // Проверяем, что Bootstrap 5 загружен
+    const bootstrapVersion = await page.evaluate(() => {
+        return window.bootstrap ? '5.x' : 'not found';
+    });
+    expect(bootstrapVersion).toBe('5.x');
+    
+    // Проверяем работу корзины
+    await page.click('[data-bs-toggle="dropdown"]');
+    await expect(page.locator('.dropdown-menu')).toBeVisible();
+    
+    // Проверяем адаптивность
+    await page.setViewportSize({ width: 375, height: 667 });
+    await page.click('.navbar-toggler');
+    await expect(page.locator('.navbar-collapse')).toBeVisible();
+});
+</code></pre>
+
+        <h2 id="jquery-security">🔒 Безопасность jQuery 2.1.1</h2>
+
+        <div class="alert alert-danger">
+            <h5><i class="bi bi-shield-exclamation"></i> Важно о безопасности</h5>
+            <p class="mb-2">jQuery 2.1.1 содержит несколько известных уязвимостей безопасности. Рассмотрим их и способы защиты.</p>
+            <p class="mb-0">Несмотря на уязвимости, версия остается приемлемой для использования при соблюдении мер безопасности.</p>
+        </div>
+
+        <h3>Известные уязвимости</h3>
+        
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>CVE</th>
+                        <th>Тип</th>
+                        <th>Серьезность</th>
+                        <th>Описание</th>
+                        <th>Защита</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>CVE-2015-9251</code></td>
+                        <td>XSS</td>
+                        <td><span class="badge bg-warning">Средняя</span></td>
+                        <td>Уязвимость в обработке HTML</td>
+                        <td>Валидация пользовательского ввода</td>
+                    </tr>
+                    <tr>
+                        <td><code>CVE-2019-11358</code></td>
+                        <td>Prototype Pollution</td>
+                        <td><span class="badge bg-warning">Средняя</span></td>
+                        <td>Загрязнение прототипа через $.extend</td>
+                        <td>Избегать $.extend с пользовательскими данными</td>
+                    </tr>
+                    <tr>
+                        <td><code>CVE-2020-11022</code></td>
+                        <td>XSS</td>
+                        <td><span class="badge bg-warning">Средняя</span></td>
+                        <td>XSS через HTML парсинг</td>
+                        <td>Санитизация HTML контента</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>Рекомендации по безопасному использованию</h3>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0"><i class="bi bi-shield-check"></i> Лучшие практики</h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="mb-0 small">
+                            <li>Всегда валидируйте пользовательский ввод</li>
+                            <li>Используйте CSP (Content Security Policy)</li>
+                            <li>Избегайте $.extend с недоверенными данными</li>
+                            <li>Санитизируйте HTML перед вставкой</li>
+                            <li>Регулярно обновляйте зависимости</li>
+                            <li>Мониторьте уязвимости</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h6 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Что избегать</h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="mb-0 small">
+                            <li>Не используйте $.extend с пользовательскими объектами</li>
+                            <li>Не вставляйте неочищенный HTML</li>
+                            <li>Избегайте eval() и Function()</li>
+                            <li>Не доверяйте данным из URL параметров</li>
+                            <li>Не используйте innerHTML с пользовательскими данными</li>
+                            <li>Избегайте динамического создания скриптов</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h4>Пример безопасного кода</h4>
+
+<pre><code class="language-javascript">// ❌ Небезопасно
+function updateContent(userInput) {
+    $('#content').html(userInput); // XSS уязвимость
+    $.extend(config, userInput); // Prototype pollution
+}
+
+// ✅ Безопасно
+function updateContent(userInput) {
+    // Санитизация HTML
+    var sanitized = $('<div>').text(userInput).html();
+    $('#content').html(sanitized);
+    
+    // Безопасное расширение объекта
+    var safeData = {};
+    if (userInput && typeof userInput === 'object') {
+        Object.keys(userInput).forEach(function(key) {
+            if (key !== '__proto__' && key !== 'constructor' && key !== 'prototype') {
+                safeData[key] = userInput[key];
+            }
+        });
+    }
+    $.extend(config, safeData);
+}
+
+// Использование CSP заголовков
+// Content-Security-Policy: script-src 'self' 'unsafe-inline'
+</code></pre>
+
+        <h3>Альтернативы и пути обновления</h3>
+
+        <div class="accordion" id="upgradeOptions">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#option1">
+                        Вариант 1: Обновление до jQuery 3.x
+                    </button>
+                </h2>
+                <div id="option1" class="accordion-collapse collapse" data-bs-parent="#upgradeOptions">
+                    <div class="accordion-body">
+                        <p><strong>Преимущества:</strong></p>
+                        <ul>
+                            <li>Исправлены все известные уязвимости</li>
+                            <li>Лучшая производительность</li>
+                            <li>Современные возможности</li>
+                            <li>Активная поддержка</li>
+                        </ul>
+                        <p><strong>Недостатки:</strong></p>
+                        <ul>
+                            <li>Возможны проблемы совместимости с модулями</li>
+                            <li>Требует тестирования всех функций</li>
+                            <li>Некоторые плагины могут не работать</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#option2">
+                        Вариант 2: Переход на Vanilla JavaScript
+                    </button>
+                </h2>
+                <div id="option2" class="accordion-collapse collapse" data-bs-parent="#upgradeOptions">
+                    <div class="accordion-body">
+                        <p><strong>Преимущества:</strong></p>
+                        <ul>
+                            <li>Нет зависимостей</li>
+                            <li>Максимальная производительность</li>
+                            <li>Современные браузерные API</li>
+                            <li>Полный контроль над кодом</li>
+                        </ul>
+                        <p><strong>Недостатки:</strong></p>
+                        <ul>
+                            <li>Требует полного переписывания кода</li>
+                            <li>Больше кода для кроссбраузерности</li>
+                            <li>Высокая сложность миграции</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#option3">
+                        Вариант 3: Гибридный подход (рекомендуется)
+                    </button>
+                </h2>
+                <div id="option3" class="accordion-collapse collapse" data-bs-parent="#upgradeOptions">
+                    <div class="accordion-body">
+                        <p><strong>Стратегия:</strong></p>
+                        <ul>
+                            <li>Сохранить jQuery 2.1.1 для совместимости</li>
+                            <li>Применить патчи безопасности</li>
+                            <li>Постепенно переписывать критичные части</li>
+                            <li>Использовать современные альтернативы для новых функций</li>
+                        </ul>
+                        <p><strong>Преимущества:</strong></p>
+                        <ul>
+                            <li>Минимальные изменения в существующем коде</li>
+                            <li>Постепенная модернизация</li>
+                            <li>Сохранение совместимости</li>
+                            <li>Контролируемые риски</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h2 id="modules-themes-compatibility"><i class="bi bi-puzzle"></i> Совместимость модулей и тем OpenCart</h2>
+
+        <div class="alert alert-info">
+            <h5><i class="bi bi-info-circle"></i> Реальность OpenCart экосистемы</h5>
+            <p class="mb-2">Большинство модулей и тем для OpenCart 3.x были созданы с расчетом на jQuery 2.1.1 и Bootstrap 3. Это создает определенные вызовы при миграции на Bootstrap 5.</p>
+            <p class="mb-0">Мы предлагаем практические решения для обеспечения совместимости без потери функциональности.</p>
+        </div>
+
+        <h3>Анализ популярных модулей OpenCart</h3>
+
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Тип модуля</th>
+                        <th>Зависимости</th>
+                        <th>Проблемы с Bootstrap 5</th>
+                        <th>Решение</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Модули оплаты</strong></td>
+                        <td>jQuery 2.1.1, Bootstrap 3 модальные окна</td>
+                        <td>Устаревшие data-атрибуты, классы форм</td>
+                        <td>Обертка совместимости</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Модули доставки</strong></td>
+                        <td>jQuery AJAX, Bootstrap 3 формы</td>
+                        <td>Классы валидации, стили кнопок</td>
+                        <td>CSS переопределения</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Модули каталога</strong></td>
+                        <td>jQuery UI, Swiper, Bootstrap 3 сетка</td>
+                        <td>Breakpoints, классы колонок</td>
+                        <td>JavaScript адаптер</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Административные модули</strong></td>
+                        <td>jQuery DataTables, Bootstrap 3 компоненты</td>
+                        <td>Стили таблиц, навигация</td>
+                        <td>Тематические стили</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Темы оформления</strong></td>
+                        <td>Bootstrap 3 полностью, jQuery плагины</td>
+                        <td>Все компоненты требуют обновления</td>
+                        <td>Поэтапная миграция</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>Универсальная обертка совместимости</h3>
+        <p>Создайте файл <code>opencart-bootstrap5-compat.js</code> для автоматической адаптации модулей:</p>
+
+<pre><code class="language-javascript">/**
+ * OpenCart Bootstrap 5 Compatibility Layer
+ * Автоматическая адаптация модулей OpenCart для Bootstrap 5
+ */
+(function($) {
+    'use strict';
+    
+    // Флаг инициализации
+    var isInitialized = false;
+    
+    // Конфигурация совместимости
+    var compatConfig = {
+        autoUpdate: true,
+        logChanges: false,
+        preserveOriginal: true
+    };
+    
+    /**
+     * Обновление классов Bootstrap 3 -> Bootstrap 5
+     */
+    function updateBootstrapClasses() {
+        if (!compatConfig.autoUpdate) return;
+        
+        var classMap = {
+            // Кнопки
+            'btn-default': 'btn-secondary',
+            'btn-xs': 'btn-sm',
+            
+            // Формы
+            'form-group': 'mb-3',
+            'control-label': 'form-label',
+            'help-block': 'form-text text-muted',
+            'has-error': 'is-invalid',
+            'has-success': 'is-valid',
+            
+            // Сетка
+            'col-xs-1': 'col-1', 'col-xs-2': 'col-2', 'col-xs-3': 'col-3',
+            'col-xs-4': 'col-4', 'col-xs-5': 'col-5', 'col-xs-6': 'col-6',
+            'col-xs-7': 'col-7', 'col-xs-8': 'col-8', 'col-xs-9': 'col-9',
+            'col-xs-10': 'col-10', 'col-xs-11': 'col-11', 'col-xs-12': 'col-12',
+            
+            // Утилиты
+            'pull-left': 'float-start',
+            'pull-right': 'float-end',
+            'text-left': 'text-start',
+            'text-right': 'text-end',
+            'center-block': 'mx-auto d-block',
+            
+            // Панели -> Карточки
+            'panel': 'card',
+            'panel-default': 'card',
+            'panel-heading': 'card-header',
+            'panel-body': 'card-body',
+            'panel-footer': 'card-footer'
+        };
+        
+        // Применяем замены классов
+        Object.keys(classMap).forEach(function(oldClass) {
+            var elements = document.querySelectorAll('.' + oldClass);
+            elements.forEach(function(el) {
+                el.classList.remove(oldClass);
+                el.classList.add(classMap[oldClass]);
+                
+                if (compatConfig.logChanges) {
+                    console.log('Updated class:', oldClass, '->', classMap[oldClass]);
+                }
+            });
+        });
+    }
+    
+    /**
+     * Обновление data-атрибутов Bootstrap 3 -> Bootstrap 5
+     */
+    function updateDataAttributes() {
+        var attrMap = {
+            'data-toggle': 'data-bs-toggle',
+            'data-target': 'data-bs-target',
+            'data-dismiss': 'data-bs-dismiss',
+            'data-slide': 'data-bs-slide',
+            'data-slide-to': 'data-bs-slide-to',
+            'data-spy': 'data-bs-spy',
+            'data-offset': 'data-bs-offset'
+        };
+        
+        Object.keys(attrMap).forEach(function(oldAttr) {
+            var elements = document.querySelectorAll('[' + oldAttr + ']');
+            elements.forEach(function(el) {
+                var value = el.getAttribute(oldAttr);
+                el.setAttribute(attrMap[oldAttr], value);
+                
+                if (compatConfig.preserveOriginal) {
+                    el.setAttribute(oldAttr + '-original', value);
+                } else {
+                    el.removeAttribute(oldAttr);
+                }
+            });
+        });
+    }
+    
+    /**
+     * Эмуляция Bootstrap 3 JavaScript API
+     */
+    function createBootstrap3API() {
+        // Сохраняем оригинальные методы jQuery
+        if ($.fn.modal && !$.fn.modal_bs3) {
+            $.fn.modal_bs3 = $.fn.modal;
+        }
+        
+        // Переопределяем modal для Bootstrap 5
+        $.fn.modal = function(action) {
+            return this.each(function() {
+                var $this = $(this);
+                var modal;
+                
+                if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                    modal = bootstrap.Modal.getOrCreateInstance(this);
+                    
+                    switch(action) {
+                        case 'show':
+                            modal.show();
+                            break;
+                        case 'hide':
+                            modal.hide();
+                            break;
+                        case 'toggle':
+                            modal.toggle();
+                            break;
+                        default:
+                            if (typeof action === 'object') {
+                                // Инициализация с опциями
+                                modal = new bootstrap.Modal(this, action);
+                            }
+                    }
+                } else if ($.fn.modal_bs3) {
+                    // Fallback к оригинальному методу
+                    return $.fn.modal_bs3.call($this, action);
+                }
+            });
+        };
+        
+        // Аналогично для других компонентов
+        ['tooltip', 'popover', 'dropdown', 'collapse'].forEach(function(component) {
+            if ($.fn[component] && !$.fn[component + '_bs3']) {
+                $.fn[component + '_bs3'] = $.fn[component];
+                
+                $.fn[component] = function(action) {
+                    return this.each(function() {
+                        if (typeof bootstrap !== 'undefined' && bootstrap[component.charAt(0).toUpperCase() + component.slice(1)]) {
+                            var Component = bootstrap[component.charAt(0).toUpperCase() + component.slice(1)];
+                            var instance = Component.getOrCreateInstance(this);
+                            
+                            if (typeof action === 'string' && instance[action]) {
+                                instance[action]();
+                            }
+                        } else if ($.fn[component + '_bs3']) {
+                            return $.fn[component + '_bs3'].call($(this), action);
+                        }
+                    });
+                };
+            }
+        });
+    }
+    
+    /**
+     * Исправление специфичных проблем OpenCart модулей
+     */
+    function fixOpenCartModules() {
+        // Исправление модулей оплаты
+        $(document).on('click', '[data-toggle="modal"][data-target]', function(e) {
+            var target = $(this).data('target');
+            if (target) {
+                var $modal = $(target);
+                if ($modal.length && typeof bootstrap !== 'undefined') {
+                    e.preventDefault();
+                    var modal = bootstrap.Modal.getOrCreateInstance($modal[0]);
+                    modal.show();
+                }
+            }
+        });
+        
+        // Исправление форм с валидацией
+        $('.form-group.has-error').each(function() {
+            $(this).removeClass('form-group has-error').addClass('mb-3');
+            $(this).find('.form-control').addClass('is-invalid');
+        });
+        
+        // Исправление dropdown меню
+        $('.dropdown-toggle').each(function() {
+            if (!$(this).attr('data-bs-toggle')) {
+                $(this).attr('data-bs-toggle', 'dropdown');
+            }
+        });
+    }
+    
+    /**
+     * Мониторинг динамически добавляемого контента
+     */
+    function setupMutationObserver() {
+        if (typeof MutationObserver === 'undefined') return;
+        
+        var observer = new MutationObserver(function(mutations) {
+            var shouldUpdate = false;
+            
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                    shouldUpdate = true;
+                }
+            });
+            
+            if (shouldUpdate) {
+                setTimeout(function() {
+                    updateBootstrapClasses();
+                    updateDataAttributes();
+                    fixOpenCartModules();
+                }, 100);
+            }
+        });
+        
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }
+    
+    /**
+     * Инициализация совместимости
+     */
+    function initCompatibility() {
+        if (isInitialized) return;
+        
+        console.log('Initializing OpenCart Bootstrap 5 Compatibility Layer...');
+        
+        // Обновляем существующий контент
+        updateBootstrapClasses();
+        updateDataAttributes();
+        createBootstrap3API();
+        fixOpenCartModules();
+        
+        // Настраиваем мониторинг новых элементов
+        setupMutationObserver();
+        
+        // Обработка AJAX запросов
+        $(document).ajaxComplete(function() {
+            setTimeout(function() {
+                updateBootstrapClasses();
+                updateDataAttributes();
+                fixOpenCartModules();
+            }, 200);
+        });
+        
+        isInitialized = true;
+        console.log('OpenCart Bootstrap 5 Compatibility Layer initialized successfully!');
+    }
+    
+    // Публичный API
+    window.OpenCartBootstrap5Compat = {
+        init: initCompatibility,
+        updateClasses: updateBootstrapClasses,
+        updateAttributes: updateDataAttributes,
+        config: compatConfig
+    };
+    
+    // Автоматическая инициализация
+    $(document).ready(function() {
+        initCompatibility();
+    });
+    
+})(jQuery);
+</code></pre>
+
+        <h3>Специфичные решения для популярных модулей</h3>
+
+        <div class="accordion" id="modulesSolutions">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#payment-modules">
+                        Модули оплаты (PayPal, Stripe, и др.)
+                    </button>
+                </h2>
+                <div id="payment-modules" class="accordion-collapse collapse" data-bs-parent="#modulesSolutions">
+                    <div class="accordion-body">
+                        <h6>Типичные проблемы:</h6>
+                        <ul>
+                            <li>Модальные окна не открываются</li>
+                            <li>Формы выглядят некорректно</li>
+                            <li>Кнопки имеют неправильные стили</li>
+                        </ul>
+                        
+                        <h6>CSS исправления:</h6>
+<pre><code class="language-css">/* Исправления для модулей оплаты */
+.payment-module .btn-default {
+    @extend .btn-secondary;
+}
+
+.payment-module .form-group {
+    @extend .mb-3;
+}
+
+.payment-module .control-label {
+    @extend .form-label;
+}
+
+.payment-module .help-block {
+    @extend .form-text;
+    @extend .text-muted;
+}
+</code></pre>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#catalog-modules">
+                        Модули каталога (фильтры, сравнение, избранное)
+                    </button>
+                </h2>
+                <div id="catalog-modules" class="accordion-collapse collapse" data-bs-parent="#modulesSolutions">
+                    <div class="accordion-body">
+                        <h6>Адаптация сетки товаров:</h6>
+<pre><code class="language-javascript">// Обновление классов сетки для модулей каталога
+function updateProductGrid() {
+    // Замена col-xs-* на col-*
+    $('.product-grid [class*="col-xs-"]').each(function() {
+        var classes = $(this).attr('class');
+        var newClasses = classes.replace(/col-xs-(\d+)/g, 'col-$1');
+        $(this).attr('class', newClasses);
+    });
+    
+    // Обновление breakpoints для фильтров
+    $('.filter-group').addClass('mb-3').removeClass('form-group');
+    $('.filter-group label').addClass('form-label').removeClass('control-label');
+}
+
+// Запуск при загрузке и после AJAX
+$(document).ready(updateProductGrid);
+$(document).ajaxComplete(updateProductGrid);
+</code></pre>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#admin-modules">
+                        Административные модули
+                    </button>
+                </h2>
+                <div id="admin-modules" class="accordion-collapse collapse" data-bs-parent="#modulesSolutions">
+                    <div class="accordion-body">
+                        <h6>Обновление административных интерфейсов:</h6>
+<pre><code class="language-css">/* Стили для административных модулей */
+.admin-module .panel {
+    @extend .card;
+}
+
+.admin-module .panel-heading {
+    @extend .card-header;
+}
+
+.admin-module .panel-body {
+    @extend .card-body;
+}
+
+.admin-module .table-responsive {
+    border: none;
+}
+
+.admin-module .btn-group .btn {
+    border-radius: 0;
+}
+
+.admin-module .btn-group .btn:first-child {
+    border-top-left-radius: var(--bs-btn-border-radius);
+    border-bottom-left-radius: var(--bs-btn-border-radius);
+}
+
+.admin-module .btn-group .btn:last-child {
+    border-top-right-radius: var(--bs-btn-border-radius);
+    border-bottom-right-radius: var(--bs-btn-border-radius);
+}
+</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h3>Тестирование совместимости модулей</h3>
+
+        <div class="alert alert-warning">
+            <h6><i class="bi bi-exclamation-triangle"></i> Чек-лист тестирования модулей</h6>
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Визуальное тестирование:</h6>
+                    <ul class="mb-0 small">
+                        <li>✅ Кнопки отображаются корректно</li>
+                        <li>✅ Формы имеют правильные отступы</li>
+                        <li>✅ Модальные окна открываются</li>
+                        <li>✅ Dropdown меню работают</li>
+                        <li>✅ Tooltips показываются</li>
+                        <li>✅ Адаптивность сохранена</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6>Функциональное тестирование:</h6>
+                    <ul class="mb-0 small">
+                        <li>✅ AJAX запросы выполняются</li>
+                        <li>✅ Валидация форм работает</li>
+                        <li>✅ События JavaScript срабатывают</li>
+                        <li>✅ Анимации плавные</li>
+                        <li>✅ Нет ошибок в консоли</li>
+                        <li>✅ Производительность не снижена</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <h2 id="troubleshooting"><i class="bi bi-tools"></i> Решение проблем</h2>
+
+        <h3>Частые проблемы и их решения:</h3>
+
+        <div class="accordion" id="troubleshootingAccordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#problem1">
+                        <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                        Модальные окна не открываются
+                    </button>
+                </h2>
+                <div id="problem1" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                    <div class="accordion-body">
+                        <p><strong>Причина:</strong> Не обновлены data-атрибуты</p>
+                        <p><strong>Решение:</strong></p>
+                        <ul>
+                            <li>Замените <code>data-toggle="modal"</code> на <code>data-bs-toggle="modal"</code></li>
+                            <li>Замените <code>data-target="#modal"</code> на <code>data-bs-target="#modal"</code></li>
+                            <li>Замените <code>data-dismiss="modal"</code> на <code>data-bs-dismiss="modal"</code></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#problem2">
+                        <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                        Выпадающие меню не работают
+                    </button>
+                </h2>
+                <div id="problem2" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                    <div class="accordion-body">
+                        <p><strong>Причина:</strong> Неправильные классы или атрибуты</p>
+                        <p><strong>Решение:</strong></p>
+                        <ul>
+                            <li>Замените <code>data-toggle="dropdown"</code> на <code>data-bs-toggle="dropdown"</code></li>
+                            <li>Убедитесь, что используется класс <code>dropdown-toggle</code></li>
+                            <li>Проверьте, что Bootstrap 5 JS подключен</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#problem3">
+                        <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                        Сетка товаров сломана на мобильных
+                    </button>
+                </h2>
+                <div id="problem3" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                    <div class="accordion-body">
+                        <p><strong>Причина:</strong> Использование устаревших классов <code>col-xs-*</code></p>
+                        <p><strong>Решение:</strong></p>
+                        <ul>
+                            <li>Замените <code>col-xs-*</code> на <code>col-*</code></li>
+                            <li>Обновите JavaScript в <code>common.js</code></li>
+                            <li>Проверьте все шаблоны товаров</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#problem4">
+                        <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                        Иконки не отображаются
+                    </button>
+                </h2>
+                <div id="problem4" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                    <div class="accordion-body">
+                        <p><strong>Причина:</strong> Glyphicons удалены из Bootstrap 5</p>
+                        <p><strong>Решение:</strong></p>
+                        <ul>
+                            <li>Подключите Bootstrap Icons или Font Awesome</li>
+                            <li>Замените все классы <code>glyphicon-*</code></li>
+                            <li>Обновите шаблоны с новыми иконками</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#problem5">
+                        <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                        Формы выглядят неправильно
+                    </button>
+                </h2>
+                <div id="problem5" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                    <div class="accordion-body">
+                        <p><strong>Причина:</strong> Изменились классы форм</p>
+                        <p><strong>Решение:</strong></p>
+                        <ul>
+                            <li>Замените <code>form-group</code> на <code>mb-3</code></li>
+                            <li>Замените <code>control-label</code> на <code>form-label</code></li>
+                            <li>Замените <code>help-block</code> на <code>form-text</code></li>
+                            <li>Обновите валидацию форм</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h3>Отладка JavaScript:</h3>
+
+<pre><code class="language-javascript">// Проверка загрузки Bootstrap 5
+console.log('Bootstrap version:', window.bootstrap ? 'Bootstrap 5 loaded' : 'Bootstrap not found');
+
+// Проверка jQuery (для совместимости)
+console.log('jQuery version:', window.jQuery ? $.fn.jquery : 'jQuery not found');
+
+// Проверка работы tooltips
+document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    console.log('Found tooltips:', tooltipTriggerList.length);
+});
+
+// Проверка модальных окон
+document.addEventListener('DOMContentLoaded', function() {
+    var modalList = [].slice.call(document.querySelectorAll('.modal'));
+    console.log('Found modals:', modalList.length);
+});
+</code></pre>
+
+        <h2 id="performance"><i class="bi bi-speedometer2"></i> Оптимизация производительности</h2>
+
+        <h3>Рекомендации по производительности:</h3>
+
+        <div class="row">
+            <div class="col-md-6">
+                <h5><i class="bi bi-lightning"></i> CSS оптимизация:</h5>
+                <ul>
+                    <li>Используйте PurgeCSS для удаления неиспользуемых стилей</li>
+                    <li>Минифицируйте CSS файлы</li>
+                    <li>Используйте CSS-переменные Bootstrap 5</li>
+                    <li>Оптимизируйте кастомные стили</li>
+                </ul>
+
+                <h5><i class="bi bi-code-slash"></i> JavaScript оптимизация:</h5>
+                <ul>
+                    <li>Загружайте только необходимые компоненты Bootstrap</li>
+                    <li>Минифицируйте JavaScript файлы</li>
+                    <li>Используйте async/defer для скриптов</li>
+                    <li>Оптимизируйте AJAX запросы</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h5><i class="bi bi-image"></i> Изображения:</h5>
+                <ul>
+                    <li>Используйте современные форматы (WebP, AVIF)</li>
+                    <li>Оптимизируйте размеры изображений</li>
+                    <li>Реализуйте lazy loading</li>
+                    <li>Используйте responsive images</li>
+                </ul>
+
+                <h5><i class="bi bi-server"></i> Серверная оптимизация:</h5>
+                <ul>
+                    <li>Включите gzip сжатие</li>
+                    <li>Настройте кэширование браузера</li>
+                    <li>Используйте CDN для статических ресурсов</li>
+                    <li>Оптимизируйте базу данных</li>
+                </ul>
+            </div>
+        </div>
+
+        <h4>Пример конфигурации PurgeCSS:</h4>
+
+<pre><code class="language-javascript">// purgecss.config.js
+module.exports = {
+    content: [
+        './catalog/view/theme/default/template/**/*.twig',
+        './catalog/view/javascript/**/*.js'
+    ],
+    css: [
+        './catalog/view/theme/default/stylesheet/stylesheet.css'
+    ],
+    safelist: [
+        // Bootstrap компоненты
+        /^modal/,
+        /^dropdown/,
+        /^tooltip/,
+        /^popover/,
+        /^carousel/,
+        // Динамические классы
+        'show',
+        'active',
+        'fade',
+        'collapse',
+        'collapsing'
+    ]
+};
+</code></pre>
+
+        <h2 id="conclusion"><i class="bi bi-check-circle"></i> Заключение</h2>
+
+        <div class="alert alert-success">
+            <h5><i class="bi bi-trophy"></i> Поздравляем!</h5>
+            <p class="mb-0">Вы успешно мигрировали OpenCart 3.0.x.x на Bootstrap 5. Ваш сайт теперь использует современные технологии и будет работать быстрее и стабильнее.</p>
+        </div>
+
+        <h3>Что вы получили после миграции:</h3>
+
+        <div class="row">
+            <div class="col-md-6">
+                <h5><i class="bi bi-speedometer2 text-success"></i> Производительность:</h5>
+                <ul>
+                    <li>Меньший размер CSS и JS файлов</li>
+                    <li>Отказ от jQuery (опционально)</li>
+                    <li>Улучшенная скорость загрузки</li>
+                    <li>Оптимизированные анимации</li>
+                </ul>
+
+                <h5><i class="bi bi-phone text-primary"></i> Адаптивность:</h5>
+                <ul>
+                    <li>Улучшенная поддержка мобильных устройств</li>
+                    <li>Новые breakpoints для больших экранов</li>
+                    <li>Лучшая работа на планшетах</li>
+                    <li>Современные CSS Grid и Flexbox</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h5><i class="bi bi-palette text-info"></i> Дизайн:</h5>
+                <ul>
+                    <li>Современный внешний вид</li>
+                    <li>Улучшенные компоненты</li>
+                    <li>Новые утилитарные классы</li>
+                    <li>CSS-переменные для кастомизации</li>
+                </ul>
+
+                <h5><i class="bi bi-shield-check text-warning"></i> Поддержка:</h5>
+                <ul>
+                    <li>Активная разработка Bootstrap 5</li>
+                    <li>Регулярные обновления безопасности</li>
+                    <li>Большое сообщество разработчиков</li>
+                    <li>Совместимость с современными браузерами</li>
+                </ul>
+            </div>
+        </div>
+
+        <h3>Дальнейшие шаги:</h3>
+
+        <ol>
+            <li><strong>Мониторинг:</strong> Следите за работой сайта в первые дни после миграции</li>
+            <li><strong>Обратная связь:</strong> Собирайте отзывы пользователей о новом интерфейсе</li>
+            <li><strong>Оптимизация:</strong> Продолжайте улучшать производительность</li>
+            <li><strong>Обновления:</strong> Регулярно обновляйте Bootstrap до новых версий</li>
+            <li><strong>Документация:</strong> Ведите документацию изменений для команды</li>
+        </ol>
+
+        <div class="alert alert-info">
+            <h5><i class="bi bi-lightbulb"></i> Полезные ресурсы:</h5>
+            <ul class="mb-0">
+                <li><a href="https://getbootstrap.com/docs/5.3/" target="_blank">Официальная документация Bootstrap 5</a></li>
+                <li><a href="https://icons.getbootstrap.com/" target="_blank">Bootstrap Icons</a></li>
+                <li><a href="https://github.com/opencart/opencart" target="_blank">OpenCart на GitHub</a></li>
+                <li><a href="https://forum.opencart.com/" target="_blank">Форум OpenCart</a></li>
+                <li><a href="https://web.dev/" target="_blank">Web.dev - руководства по веб-разработке</a></li>
+            </ul>
+        </div>
+
+        <h2 id="ready-files"><i class="bi bi-folder-check"></i> Использование готовых файлов</h2>
+
+        <div class="alert alert-success">
+            <h5><i class="bi bi-rocket-takeoff"></i> Быстрый старт</h5>
+            <p class="mb-0">Скачайте готовый архив со всеми файлами для миграции:</p>
+            <div class="mt-3">
+                <a href="catalog_bootstrap5.zip" class="btn btn-primary btn-lg" download>
+                    <i class="bi bi-download me-2"></i>Скачать catalog_bootstrap5.zip
+                </a>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <h5><i class="bi bi-star"></i> Ключевые улучшения версии 2025</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>🎨 Галерея изображений товара:</h6>
+                    <ul class="small mb-2">
+                        <li>Модальное окно с навигацией</li>
+                        <li>Миниатюры для быстрого переключения</li>
+                        <li>Клавиатурная навигация (←/→)</li>
+                        <li>Адаптивный дизайн для мобильных</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6>🧹 Чистая архитектура:</h6>
+                    <ul class="small mb-2">
+                        <li>Убраны встроенные стили из модулей</li>
+                        <li>Убраны все стикеры "Sale", "Bestseller"</li>
+                        <li>Нативные Bootstrap 5 карусели</li>
+                        <li>Правильная структура layout файлов</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <h3>Инструкция по установке</h3>
+        <ol>
+            <li><strong>Создайте резервную копию</strong> папки <span class="file-path">catalog/</span></li>
+            <li><strong>Скачайте архив</strong> <span class="file-path">catalog_bootstrap5.zip</span></li>
+            <li><strong>Распакуйте архив</strong> в корень вашего сайта</li>
+            <li><strong>Скопируйте файлы</strong> из <span class="file-path">catalog_bootstrap5/</span> в <span class="file-path">catalog/</span></li>
+            <li><strong>Очистите кэш</strong> браузера (Ctrl+F5)</li>
+            <li><strong>Протестируйте</strong> функциональность сайта</li>
+        </ol>
+
+        <h3>Проверка работоспособности</h3>
+
+<pre><code class="language-javascript">// Добавьте этот код в консоль браузера для проверки
+console.log('Bootstrap version:', window.bootstrap ? 'Bootstrap 5 loaded' : 'Bootstrap not found');
+console.log('jQuery version:', window.jQuery ? $.fn.jquery : 'jQuery not found');
+
+// Проверка иконок Bootstrap Icons
+const iconTest = document.createElement('i');
+iconTest.className = 'bi bi-cart';
+document.body.appendChild(iconTest);
+console.log('Bootstrap Icons loaded:', getComputedStyle(iconTest, '::before').content !== 'none');
+document.body.removeChild(iconTest);
+
+// Проверка галереи товара (если на странице товара)
+const gallery = document.querySelector('.product-gallery');
+if (gallery) {
+    console.log('✅ Галерея товара найдена');
+    const modal = document.querySelector('#imageModal');
+    console.log('✅ Модальное окно галереи:', modal ? 'найдено' : 'не найдено');
+}
+
+// Проверка каруселей Bootstrap 5
+const carousels = document.querySelectorAll('.carousel');
+console.log(`✅ Найдено каруселей Bootstrap 5: ${carousels.length}`);
+
+// Проверка отсутствия встроенных стилей
+const inlineStyles = document.querySelectorAll('style');
+const templateStyles = Array.from(inlineStyles).filter(style => 
+    style.innerHTML.includes('product-layout') || 
+    style.innerHTML.includes('carousel')
+);
+console.log('🧹 Встроенных стилей в модулях:', templateStyles.length === 0 ? 'не найдено ✅' : `найдено ${templateStyles.length} ❌`);
+</code></pre>
+
+        <h3>Структура архива</h3>
+
+        <div class="row">
+            <div class="col-md-6">
+                <h5><i class="bi bi-folder"></i> Bootstrap 5 файлы:</h5>
+                <ul class="small">
+                    <li><span class="file-path">css/bootstrap.min.css</span> - основные стили (200KB)</li>
+                    <li><span class="file-path">js/bootstrap.bundle.min.js</span> - JavaScript с Popper (80KB)</li>
+                    <li><span class="file-path">bootstrap-icons.css</span> - CSS для иконок (15KB)</li>
+                    <li><span class="file-path">stylesheet/stylesheet.css</span> - обновленные стили темы</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h5><i class="bi bi-images"></i> Что нового (2025):</h5>
+                <ul class="small">
+                    <li>🎨 <strong>Улучшенная галерея</strong> - модальное окно с навигацией</li>
+                    <li>🧹 <strong>Чистая архитектура</strong> - без встроенных стилей</li>
+                    <li>🎠 <strong>Нативные карусели</strong> - Bootstrap 5 carousel</li>
+                    <li>🚫 <strong>Убраны стикеры</strong> - чистый дизайн</li>
+                    <li>📱 <strong>Адаптивность</strong> - оптимизация для мобильных</li>
+                    <li>⚡ <strong>Производительность</strong> - оптимизированный код</li>
+                </ul>
+            </div>
+        </div>
+
+        <h3>Преимущества использования локальных файлов</h3>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h6 class="card-title"><i class="bi bi-speedometer2 text-success"></i> Производительность</h6>
+                        <p class="card-text small">Оптимизированный код, убраны дублирующие стили, нативные Bootstrap 5 компоненты</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h6 class="card-title"><i class="bi bi-palette text-primary"></i> Современный дизайн</h6>
+                        <p class="card-text small">Улучшенная галерея товаров, чистый дизайн без стикеров, адаптивные компоненты</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h6 class="card-title"><i class="bi bi-code-square text-info"></i> Чистая архитектура</h6>
+                        <p class="card-text small">Правильное разделение ответственности, без встроенных стилей в template файлах</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning mt-4">
+            <h5><i class="bi bi-exclamation-triangle"></i> Важные замечания (обновлено 2025)</h5>
+            <ul class="mb-0">
+                <li><strong>Резервная копия:</strong> Обязательно создайте полную резервную копию перед миграцией</li>
+                <li><strong>Тестирование:</strong> Протестируйте на тестовом сервере, особенно галерею товаров и карусели</li>
+                <li><strong>Модули:</strong> Проверьте совместимость сторонних модулей с новой структурой</li>
+                <li><strong>Кэш:</strong> Очистите кэш браузера и OpenCart после изменений</li>
+                <li><strong>Галерея:</strong> Убедитесь, что модальное окно галереи работает корректно</li>
+                <li><strong>Карусели:</strong> Проверьте работу slideshow и carousel модулей</li>
+                <li><strong>Адаптивность:</strong> Протестируйте на мобильных устройствах</li>
+            </ul>
+        </div>
+
+        <p class="text-center mt-4">
+            <strong>Удачи в развитии вашего интернет-магазина на OpenCart с Bootstrap 5! 🚀</strong>
+        </p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.8.0/lib/highlight.min.js"></script>
+    <script>
+        // Проверяем загрузку всех необходимых библиотек
+        document.addEventListener('DOMContentLoaded', function() {
+            // Проверяем Bootstrap
+            if (typeof bootstrap === 'undefined') {
+                console.warn('Bootstrap 5 не загружен');
+            } else {
+                console.log('Bootstrap 5 загружен успешно');
+            }
+            
+            // Проверяем jQuery (если есть)
+            if (typeof $ !== 'undefined') {
+                console.log('jQuery загружен');
+            }
+            
+            // Проверяем и инициализируем подсветку синтаксиса
+            if (typeof hljs !== 'undefined') {
+                hljs.highlightAll();
+                console.log('Highlight.js инициализирован');
+            } else {
+                console.warn('Highlight.js не загружен');
+                // Fallback: попробуем загрузить альтернативно
+                var script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js';
+                script.onload = function() {
+                    if (typeof hljs !== 'undefined') {
+                        hljs.highlightAll();
+                        console.log('Highlight.js загружен через fallback');
+                    }
+                };
+                document.head.appendChild(script);
+            }
+        });
+        
+        // Общая обработка ошибок JavaScript
+        window.addEventListener('error', function(event) {
+            console.error('JavaScript ошибка:', event.error);
+            // Не показываем ошибки пользователю, только логируем
+        });
+        
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('Необработанное отклонение Promise:', event.reason);
+            event.preventDefault();
+        });
+    </script>
+    
+    <script>
+    // База данных для поиска по Bootstrap классам и элементам
+    const searchDatabase = [
+        // Сетка
+        {
+            bootstrap3: 'col-xs-*',
+            bootstrap5: 'col-*',
+            section: 'grid-migration',
+            title: 'Классы сетки - col-xs',
+            description: 'Замена col-xs-* на col-* в Bootstrap 5',
+            examples: ['col-xs-12 → col-12', 'col-xs-6 → col-6']
+        },
+        {
+            bootstrap3: 'col-sm-*',
+            bootstrap5: 'col-sm-*',
+            section: 'grid-migration',
+            title: 'Классы сетки - col-sm',
+            description: 'col-sm-* остается без изменений',
+            examples: ['col-sm-6 (без изменений)']
+        },
+        {
+            bootstrap3: 'col-md-*',
+            bootstrap5: 'col-md-*',
+            section: 'grid-migration',
+            title: 'Классы сетки - col-md',
+            description: 'col-md-* остается без изменений',
+            examples: ['col-md-4 (без изменений)']
+        },
+        
+        // Кнопки
+        {
+            bootstrap3: 'btn-default',
+            bootstrap5: 'btn-secondary',
+            section: 'components',
+            title: 'Кнопки - btn-default',
+            description: 'Замена btn-default на btn-secondary',
+            examples: ['btn btn-default → btn btn-secondary']
+        },
+        {
+            bootstrap3: 'btn-xs',
+            bootstrap5: 'btn-sm',
+            section: 'components',
+            title: 'Кнопки - btn-xs',
+            description: 'Замена btn-xs на btn-sm (самый маленький размер)',
+            examples: ['btn btn-xs → btn btn-sm']
+        },
+        
+        // Формы
+        {
+            bootstrap3: 'form-group',
+            bootstrap5: 'mb-3',
+            section: 'forms',
+            title: 'Формы - form-group',
+            description: 'Замена form-group на mb-3 для отступов',
+            examples: ['<div class="form-group"> → <div class="mb-3">']
+        },
+        {
+            bootstrap3: 'control-label',
+            bootstrap5: 'form-label',
+            section: 'forms',
+            title: 'Формы - control-label',
+            description: 'Замена control-label на form-label',
+            examples: ['<label class="control-label"> → <label class="form-label">']
+        },
+        {
+            bootstrap3: 'help-block',
+            bootstrap5: 'form-text',
+            section: 'forms',
+            title: 'Формы - help-block',
+            description: 'Замена help-block на form-text',
+            examples: ['<span class="help-block"> → <div class="form-text">']
+        },
+        {
+            bootstrap3: 'has-error',
+            bootstrap5: 'is-invalid',
+            section: 'forms',
+            title: 'Формы - has-error',
+            description: 'Замена has-error на is-invalid для валидации',
+            examples: ['<div class="has-error"> → input.is-invalid']
+        },
+        {
+            bootstrap3: 'has-success',
+            bootstrap5: 'is-valid',
+            section: 'forms',
+            title: 'Формы - has-success',
+            description: 'Замена has-success на is-valid для валидации',
+            examples: ['<div class="has-success"> → input.is-valid']
+        },
+        
+        // Data атрибуты
+        {
+            bootstrap3: 'data-toggle',
+            bootstrap5: 'data-bs-toggle',
+            section: 'javascript',
+            title: 'Data атрибуты - data-toggle',
+            description: 'Все data-атрибуты получили префикс bs-',
+            examples: ['data-toggle="modal" → data-bs-toggle="modal"']
+        },
+        {
+            bootstrap3: 'data-target',
+            bootstrap5: 'data-bs-target',
+            section: 'javascript',
+            title: 'Data атрибуты - data-target',
+            description: 'Замена data-target на data-bs-target',
+            examples: ['data-target="#modal" → data-bs-target="#modal"']
+        },
+        {
+            bootstrap3: 'data-dismiss',
+            bootstrap5: 'data-bs-dismiss',
+            section: 'javascript',
+            title: 'Data атрибуты - data-dismiss',
+            description: 'Замена data-dismiss на data-bs-dismiss',
+            examples: ['data-dismiss="modal" → data-bs-dismiss="modal"']
+        },
+        
+        // Иконки
+        {
+            bootstrap3: 'glyphicon',
+            bootstrap5: 'bi',
+            section: 'icons',
+            title: 'Иконки - Glyphicons',
+            description: 'Замена Glyphicons на Bootstrap Icons',
+            examples: ['<i class="glyphicon glyphicon-user"> → <i class="bi bi-person">']
+        },
+        {
+            bootstrap3: 'glyphicon-shopping-cart',
+            bootstrap5: 'bi-cart',
+            section: 'icons',
+            title: 'Иконки - Корзина',
+            description: 'Замена иконки корзины',
+            examples: ['glyphicon-shopping-cart → bi-cart']
+        },
+        {
+            bootstrap3: 'glyphicon-user',
+            bootstrap5: 'bi-person',
+            section: 'icons',
+            title: 'Иконки - Пользователь',
+            description: 'Замена иконки пользователя',
+            examples: ['glyphicon-user → bi-person']
+        },
+        {
+            bootstrap3: 'glyphicon-search',
+            bootstrap5: 'bi-search',
+            section: 'icons',
+            title: 'Иконки - Поиск',
+            description: 'Замена иконки поиска',
+            examples: ['glyphicon-search → bi-search']
+        },
+        
+        // Навигация
+        {
+            bootstrap3: 'navbar-toggle',
+            bootstrap5: 'navbar-toggler',
+            section: 'navbar',
+            title: 'Навигация - navbar-toggle',
+            description: 'Замена navbar-toggle на navbar-toggler',
+            examples: ['<button class="navbar-toggle"> → <button class="navbar-toggler">']
+        },
+        {
+            bootstrap3: 'navbar-header',
+            bootstrap5: 'navbar-brand',
+            section: 'navbar',
+            title: 'Навигация - navbar-header',
+            description: 'Структура navbar изменилась в Bootstrap 5',
+            examples: ['Используйте navbar-brand для логотипа']
+        },
+        
+        // Модальные окна
+        {
+            bootstrap3: 'modal-title',
+            bootstrap5: 'modal-title',
+            section: 'modals',
+            title: 'Модальные окна - modal-title',
+            description: 'modal-title остается без изменений, но структура изменилась',
+            examples: ['Используйте h5.modal-title в Bootstrap 5']
+        },
+        {
+            bootstrap3: 'close',
+            bootstrap5: 'btn-close',
+            section: 'modals',
+            title: 'Модальные окна - кнопка закрытия',
+            description: 'Замена класса close на btn-close',
+            examples: ['<button class="close"> → <button class="btn-close">']
+        },
+        
+        // Утилиты
+        {
+            bootstrap3: 'pull-left',
+            bootstrap5: 'float-start',
+            section: 'css-updates',
+            title: 'Утилиты - pull-left',
+            description: 'Замена pull-left на float-start',
+            examples: ['pull-left → float-start']
+        },
+        {
+            bootstrap3: 'pull-right',
+            bootstrap5: 'float-end',
+            section: 'css-updates',
+            title: 'Утилиты - pull-right',
+            description: 'Замена pull-right на float-end',
+            examples: ['pull-right → float-end']
+        },
+        {
+            bootstrap3: 'text-left',
+            bootstrap5: 'text-start',
+            section: 'css-updates',
+            title: 'Утилиты - text-left',
+            description: 'Замена text-left на text-start',
+            examples: ['text-left → text-start']
+        },
+        {
+            bootstrap3: 'text-right',
+            bootstrap5: 'text-end',
+            section: 'css-updates',
+            title: 'Утилиты - text-right',
+            description: 'Замена text-right на text-end',
+            examples: ['text-right → text-end']
+        },
+        
+        // Дополнительные иконки
+        {
+            bootstrap3: 'glyphicon-heart',
+            bootstrap5: 'bi-heart',
+            section: 'icons',
+            title: 'Иконки - Сердце/Избранное',
+            description: 'Замена иконки сердца для избранного',
+            examples: ['glyphicon-heart → bi-heart']
+        },
+        {
+            bootstrap3: 'glyphicon-remove',
+            bootstrap5: 'bi-x',
+            section: 'icons',
+            title: 'Иконки - Удалить/Закрыть',
+            description: 'Замена иконки удаления',
+            examples: ['glyphicon-remove → bi-x']
+        },
+        {
+            bootstrap3: 'glyphicon-plus',
+            bootstrap5: 'bi-plus',
+            section: 'icons',
+            title: 'Иконки - Плюс',
+            description: 'Замена иконки плюса',
+            examples: ['glyphicon-plus → bi-plus']
+        },
+        {
+            bootstrap3: 'glyphicon-minus',
+            bootstrap5: 'bi-dash',
+            section: 'icons',
+            title: 'Иконки - Минус',
+            description: 'Замена иконки минуса',
+            examples: ['glyphicon-minus → bi-dash']
+        },
+        {
+            bootstrap3: 'glyphicon-home',
+            bootstrap5: 'bi-house',
+            section: 'icons',
+            title: 'Иконки - Дом/Главная',
+            description: 'Замена иконки дома',
+            examples: ['glyphicon-home → bi-house']
+        },
+        {
+            bootstrap3: 'glyphicon-envelope',
+            bootstrap5: 'bi-envelope',
+            section: 'icons',
+            title: 'Иконки - Конверт/Email',
+            description: 'Замена иконки конверта',
+            examples: ['glyphicon-envelope → bi-envelope']
+        },
+        {
+            bootstrap3: 'glyphicon-phone',
+            bootstrap5: 'bi-telephone',
+            section: 'icons',
+            title: 'Иконки - Телефон',
+            description: 'Замена иконки телефона',
+            examples: ['glyphicon-phone → bi-telephone']
+        },
+        
+        // Дополнительные компоненты
+        {
+            bootstrap3: 'panel',
+            bootstrap5: 'card',
+            section: 'cards',
+            title: 'Панели - panel',
+            description: 'Замена panel на card в Bootstrap 5',
+            examples: ['<div class="panel"> → <div class="card">']
+        },
+        {
+            bootstrap3: 'panel-heading',
+            bootstrap5: 'card-header',
+            section: 'cards',
+            title: 'Панели - panel-heading',
+            description: 'Замена panel-heading на card-header',
+            examples: ['<div class="panel-heading"> → <div class="card-header">']
+        },
+        {
+            bootstrap3: 'panel-body',
+            bootstrap5: 'card-body',
+            section: 'cards',
+            title: 'Панели - panel-body',
+            description: 'Замена panel-body на card-body',
+            examples: ['<div class="panel-body"> → <div class="card-body">']
+        },
+        {
+            bootstrap3: 'panel-footer',
+            bootstrap5: 'card-footer',
+            section: 'cards',
+            title: 'Панели - panel-footer',
+            description: 'Замена panel-footer на card-footer',
+            examples: ['<div class="panel-footer"> → <div class="card-footer">']
+        },
+        
+        // Дополнительные data-атрибуты
+        {
+            bootstrap3: 'data-slide',
+            bootstrap5: 'data-bs-slide',
+            section: 'javascript',
+            title: 'Data атрибуты - data-slide',
+            description: 'Замена data-slide на data-bs-slide для карусели',
+            examples: ['data-slide="prev" → data-bs-slide="prev"']
+        },
+        {
+            bootstrap3: 'data-parent',
+            bootstrap5: 'data-bs-parent',
+            section: 'javascript',
+            title: 'Data атрибуты - data-parent',
+            description: 'Замена data-parent на data-bs-parent для аккордеона',
+            examples: ['data-parent="#accordion" → data-bs-parent="#accordion"']
+        },
+        
+        // Дополнительные утилиты
+        {
+            bootstrap3: 'hidden-xs',
+            bootstrap5: 'd-none d-sm-block',
+            section: 'css-updates',
+            title: 'Утилиты - hidden-xs',
+            description: 'Замена hidden-xs на d-none d-sm-block',
+            examples: ['hidden-xs → d-none d-sm-block']
+        },
+        {
+            bootstrap3: 'hidden-sm',
+            bootstrap5: 'd-sm-none d-md-block',
+            section: 'css-updates',
+            title: 'Утилиты - hidden-sm',
+            description: 'Замена hidden-sm на d-sm-none d-md-block',
+            examples: ['hidden-sm → d-sm-none d-md-block']
+        },
+        
+        // jQuery и безопасность
+        {
+            bootstrap3: 'jquery 2.1.1',
+            bootstrap5: 'jquery 2.1.1',
+            section: 'jquery-analysis',
+            title: 'jQuery 2.1.1 анализ',
+            description: 'Подробный анализ jQuery 2.1.1 для OpenCart',
+            examples: ['Версия 2014 года', 'Поддержка IE9+', 'Размер 84KB', 'Стабильная работа']
+        },
+        {
+            bootstrap3: 'безопасность jquery',
+            bootstrap5: 'безопасность jquery',
+            section: 'jquery-security',
+            title: 'Безопасность jQuery 2.1.1',
+            description: 'Уязвимости и способы защиты jQuery 2.1.1',
+            examples: ['CVE-2015-9251', 'CVE-2019-11358', 'CVE-2020-11022', 'XSS защита']
+        },
+        {
+            bootstrap3: 'уязвимости',
+            bootstrap5: 'уязвимости',
+            section: 'jquery-security',
+            title: 'Уязвимости jQuery',
+            description: 'Известные уязвимости безопасности в jQuery 2.1.1',
+            examples: ['XSS атаки', 'Prototype Pollution', 'Валидация ввода', 'CSP защита']
+        },
+        {
+            bootstrap3: 'cve',
+            bootstrap5: 'cve',
+            section: 'jquery-security',
+            title: 'CVE уязвимости',
+            description: 'Список CVE уязвимостей в jQuery 2.1.1',
+            examples: ['CVE-2015-9251 XSS', 'CVE-2019-11358 Prototype Pollution', 'CVE-2020-11022 XSS']
+        },
+        {
+            bootstrap3: 'совместимость модулей',
+            bootstrap5: 'совместимость модулей',
+            section: 'modules-themes-compatibility',
+            title: 'Совместимость модулей OpenCart',
+            description: 'Обеспечение совместимости модулей OpenCart с Bootstrap 5',
+            examples: ['Модули оплаты', 'Модули доставки', 'Темы оформления', 'Административные модули']
+        },
+        {
+            bootstrap3: 'opencart модули',
+            bootstrap5: 'opencart модули',
+            section: 'modules-themes-compatibility',
+            title: 'Модули OpenCart',
+            description: 'Адаптация модулей OpenCart для Bootstrap 5',
+            examples: ['PayPal модуль', 'Stripe модуль', 'Фильтры каталога', 'Сравнение товаров']
+        },
+        {
+            bootstrap3: 'обертка совместимости',
+            bootstrap5: 'обертка совместимости',
+            section: 'modules-themes-compatibility',
+            title: 'Обертка совместимости',
+            description: 'JavaScript обертка для автоматической адаптации модулей',
+            examples: ['opencart-bootstrap5-compat.js', 'Автоматическое обновление классов', 'API эмуляция']
+        },
+        {
+            bootstrap3: 'datetimepicker',
+            bootstrap5: 'datetimepicker',
+            section: 'jquery-plugins-detailed',
+            title: 'Bootstrap DateTimePicker',
+            description: 'Адаптация DateTimePicker для Bootstrap 5',
+            examples: ['Обновление CSS стилей', 'Использование CSS переменных', 'Поддержка темной темы']
+        },
+        {
+            bootstrap3: 'magnific popup',
+            bootstrap5: 'magnific popup',
+            section: 'jquery-plugins-detailed',
+            title: 'Magnific Popup',
+            description: 'Magnific Popup совместимость с Bootstrap 5',
+            examples: ['Полная совместимость', 'Независим от Bootstrap', 'Возможные улучшения']
+        },
+        {
+            bootstrap3: 'swiper старый',
+            bootstrap5: 'swiper старый',
+            section: 'jquery-plugins-detailed',
+            title: 'Swiper (старая версия)',
+            description: 'Проблемы и решения для старой версии Swiper',
+            examples: ['Устаревшие breakpoints', 'Рекомендуется обновление', 'Bootstrap 5 breakpoints']
+        },
+        {
+            bootstrap3: 'visible-xs',
+            bootstrap5: 'd-block d-sm-none',
+            section: 'css-updates',
+            title: 'Утилиты - visible-xs',
+            description: 'Замена visible-xs на d-block d-sm-none',
+            examples: ['visible-xs → d-block d-sm-none']
+        },
+        
+        // OpenCart специфичные элементы
+        {
+            bootstrap3: 'product-grid',
+            bootstrap5: 'product-grid',
+            section: 'grid-migration',
+            title: 'OpenCart - product-grid',
+            description: 'Обновление сетки товаров для Bootstrap 5',
+            examples: ['Обновите классы col-xs-* на col-*']
+        },
+        {
+            bootstrap3: 'product-list',
+            bootstrap5: 'product-list',
+            section: 'grid-migration',
+            title: 'OpenCart - product-list',
+            description: 'Обновление списка товаров для Bootstrap 5',
+            examples: ['Используйте col-12 для списочного вида']
+        },
+        {
+            bootstrap3: 'cart.add',
+            bootstrap5: 'cart.add',
+            section: 'javascript',
+            title: 'OpenCart - функции корзины',
+            description: 'Обновленные функции корзины в common.js',
+            examples: ['Используйте Bootstrap 5 alerts и spinners']
+        }
+    ];
+
+    // Функция поиска с обработкой ошибок
+    function searchBootstrap(query) {
+        try {
+            if (!query || query.length < 2) return [];
+            
+            query = query.toLowerCase();
+            
+            // Проверяем, что searchDatabase определена
+            if (typeof searchDatabase === 'undefined' || !Array.isArray(searchDatabase)) {
+                console.error('searchDatabase не определена или не является массивом');
+                return [];
+            }
+            
+            return searchDatabase.filter(item => {
+                // Проверяем, что item имеет необходимые свойства
+                if (!item || typeof item !== 'object') return false;
+                
+                const bootstrap3 = (item.bootstrap3 || '').toLowerCase();
+                const bootstrap5 = (item.bootstrap5 || '').toLowerCase();
+                const title = (item.title || '').toLowerCase();
+                const description = (item.description || '').toLowerCase();
+                
+                return bootstrap3.includes(query) ||
+                       bootstrap5.includes(query) ||
+                       title.includes(query) ||
+                       description.includes(query);
+            }).slice(0, 8); // Ограничиваем результаты
+        } catch (error) {
+            console.error('Ошибка в функции поиска:', error);
+            return [];
+        }
+    }
+
+    // Функция отображения результатов
+    function displayResults(results, query = '') {
+        const resultsContainer = document.getElementById('searchResults');
+        const suggestionsContainer = document.getElementById('searchSuggestions');
+        
+        if (results.length === 0 && query.length >= 2) {
+            // Показываем рекомендации внешних ресурсов
+            const externalHtml = `
+                <div class="search-result-item" onclick="window.open('https://getbootstrap.com/docs/5.3/migration/', '_blank')">
+                    <div class="search-result-title">📖 Официальная документация Bootstrap 5</div>
+                    <div class="search-result-description">Полное руководство по миграции с Bootstrap 4/3 на Bootstrap 5</div>
+                </div>
+                <div class="search-result-item" onclick="window.open('https://getbootstrap.com/docs/5.3/components/', '_blank')">
+                    <div class="search-result-title">🧩 Компоненты Bootstrap 5</div>
+                    <div class="search-result-description">Документация по всем компонентам Bootstrap 5</div>
+                </div>
+                <div class="search-result-item" onclick="window.open('https://icons.getbootstrap.com/', '_blank')">
+                    <div class="search-result-title">🎨 Bootstrap Icons</div>
+                    <div class="search-result-description">Полная библиотека иконок Bootstrap Icons</div>
+                </div>
+                <div class="search-result-item" onclick="searchGoogle('${query} bootstrap 5 migration')">
+                    <div class="search-result-title">🔍 Поиск в Google</div>
+                    <div class="search-result-description">Найти "${query}" в контексте миграции Bootstrap 5</div>
+                </div>
+            `;
+            resultsContainer.innerHTML = externalHtml;
+            resultsContainer.classList.add('show');
+            suggestionsContainer.style.display = 'none';
+            return;
+        }
+        
+        if (results.length === 0) {
+            resultsContainer.classList.remove('show');
+            suggestionsContainer.style.display = 'block';
+            return;
+        }
+        
+        suggestionsContainer.style.display = 'none';
+        
+        const html = results.map(item => `
+            <div class="search-result-item" onclick="goToSection('${item.section}', '${item.bootstrap3}')">
+                <div class="search-result-title">${item.title}</div>
+                <div class="search-result-description">
+                    <span class="search-result-code">${item.bootstrap3}</span> → 
+                    <span class="search-result-code">${item.bootstrap5}</span>
+                </div>
+                <div class="search-result-description">${item.description}</div>
+                ${item.examples ? `<div class="search-result-description mt-1"><small>${item.examples.join(', ')}</small></div>` : ''}
+            </div>
+        `).join('');
+        
+        resultsContainer.innerHTML = html;
+        resultsContainer.classList.add('show');
+    }
+
+    // Функция поиска в Google
+    function searchGoogle(query) {
+        const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+        window.open(googleUrl, '_blank');
+        
+        // Скрываем результаты поиска
+        document.getElementById('searchResults').classList.remove('show');
+        document.getElementById('searchInput').value = '';
+        document.getElementById('searchSuggestions').style.display = 'block';
+    }
+
+    // Функция перехода к разделу
+    function goToSection(sectionId, searchTerm) {
+        const section = document.getElementById(sectionId);
+        if (section) {
+            // Скрываем результаты поиска
+            document.getElementById('searchResults').classList.remove('show');
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchSuggestions').style.display = 'block';
+            
+            // Переходим к разделу
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+            // Подсвечиваем найденный термин
+            setTimeout(() => {
+                highlightSearchTerm(section, searchTerm);
+            }, 500);
+        }
+    }
+
+    // Функция подсветки найденного термина
+    function highlightSearchTerm(container, term) {
+        const walker = document.createTreeWalker(
+            container,
+            NodeFilter.SHOW_TEXT,
+            null,
+            false
+        );
+        
+        const textNodes = [];
+        let node;
+        
+        while (node = walker.nextNode()) {
+            if (node.textContent.toLowerCase().includes(term.toLowerCase())) {
+                textNodes.push(node);
+            }
+        }
+        
+        textNodes.forEach(textNode => {
+            const parent = textNode.parentNode;
+            if (parent.tagName !== 'CODE' && parent.tagName !== 'PRE') {
+                const text = textNode.textContent;
+                const regex = new RegExp(`(${term})`, 'gi');
+                const highlightedText = text.replace(regex, '<span class="highlight">$1</span>');
+                
+                if (highlightedText !== text) {
+                    const wrapper = document.createElement('span');
+                    wrapper.innerHTML = highlightedText;
+                    parent.replaceChild(wrapper, textNode);
+                }
+            }
+        });
+    }
+
+    // Инициализация поиска
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        const clearButton = document.getElementById('clearSearch');
+        const resultsContainer = document.getElementById('searchResults');
+        
+        let searchTimeout;
+        
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            const query = this.value.trim();
+            
+            if (query.length < 2) {
+                resultsContainer.classList.remove('show');
+                document.getElementById('searchSuggestions').style.display = 'block';
+                return;
+            }
+            
+            searchTimeout = setTimeout(() => {
+                const results = searchBootstrap(query);
+                displayResults(results, query);
+            }, 300);
+        });
+        
+        clearButton.addEventListener('click', function() {
+            searchInput.value = '';
+            resultsContainer.classList.remove('show');
+            document.getElementById('searchSuggestions').style.display = 'block';
+            searchInput.focus();
+        });
+        
+        // Скрытие результатов при клике вне поиска
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.search-container')) {
+                resultsContainer.classList.remove('show');
+                document.getElementById('searchSuggestions').style.display = 'block';
+            }
+        });
+        
+        // Обработка Enter
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                const firstResult = resultsContainer.querySelector('.search-result-item');
+                if (firstResult) {
+                    firstResult.click();
+                }
+            }
+        });
+    });
+    </script>
+</body>
+</html>
